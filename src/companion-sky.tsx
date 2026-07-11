@@ -12,7 +12,7 @@
  * shared with Pip; "use my sky" asks for location and tries open-meteo, and
  * falls back gracefully wherever CSP or the user says no.
  */
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { almanacFor, seasonFor } from './almanac-bug'
 import type { Season, Weather } from './almanac-bug'
 

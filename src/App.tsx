@@ -11,6 +11,7 @@ import { PHOTO_DAYLILY, PHOTO_FERN, PHOTO_SUSAN, PHOTO_COLUMBINE, PHOTO_CONEFLOW
 import { CompanionSky } from './companion-sky'
 import { DASH_HTML } from './dashboard'
 import { MASCOT_PNG } from './brand'
+import { SPECIES } from './library-data'
 
 /* ---------------- helpers ---------------- */
 
@@ -425,7 +426,6 @@ function useAskLoop() {
   const skipRef = useRef<(() => void) | null>(null)
   const fastRef = useRef(false)
   const waitTimer = useRef<number | undefined>(undefined)
-  const skip = useCallback(() => { fastRef.current = true; skipRef.current?.() }, [])
   useEffect(() => {
     if (REDUCE) { setQ(DEMO_QA[0].q); setAnswer(DEMO_QA[0].a); return }
     let alive = true
@@ -566,6 +566,25 @@ function brainScore(nq: string, e: BrainEntry): number {
   return s
 }
 
+/* When the ask names a species, answer straight from the baked Base44 library
+ * (light + safety, one bubble line). Runs after the curated BRAIN so hand-written
+ * garden advice still wins for the questions it covers. */
+function speciesAnswer(nq: string): string | null {
+  let best: typeof SPECIES[number] | null = null
+  for (const s of SPECIES) {
+    const name = s.name.toLowerCase()
+    const latin = s.latin.toLowerCase()
+    const hit =
+      (name.length >= 4 && nq.includes(name)) ||
+      (latin.length >= 5 && nq.includes(latin)) ||
+      (nq.length >= 4 && name.includes(nq))
+    if (hit && (!best || s.name.length > best.name.length)) best = s
+  }
+  if (!best) return null
+  const light = best.light.replace(/[.\s]+$/, '')
+  return `${best.name} — ${light}, ${best.toxShort.toLowerCase()}.`
+}
+
 function answerQuery(raw: string, fbCounter: { current: number }): string {
   const nq = brainNorm(raw)
   let best: BrainEntry | null = null
@@ -575,6 +594,8 @@ function answerQuery(raw: string, fbCounter: { current: number }): string {
     if (s > bs) { bs = s; best = e }
   }
   if (best) return best.a
+  const species = speciesAnswer(nq)
+  if (species) return species
   return BRAIN_FALLBACKS[fbCounter.current++ % BRAIN_FALLBACKS.length]
 }
 
@@ -1132,21 +1153,82 @@ function Almanac() {
   )
 }
 
-/* ---------------- plant library — look up any plant ---------------- */
+/* ---------------- plant library — look up any plant ----------------
+ * The six featured PLANTS (embedded photography + hand-written copy) are
+ * fronted onto the full Base44 PlantLibrary — 956 Canadian species baked into
+ * library-data.ts. Featured entries win by name so their photos and richer
+ * copy survive; every other species renders a botanical fallback tile. */
 
 const LIB_TINTS = ['#E9F0D2', '#F2E2B4', '#EDD6C3', '#E3EDD7']
 
-/* name-hashed gradient pair for plants without photography */
-const LIB_FALLBACK_TINTS: Array<[string, string]> = [
-  ['#4A7539', '#22371D'], ['#55823A', '#33512C'], ['#6FA14E', '#3B5B2C'], ['#3B5B2C', '#22371D'],
-]
-function libFallbackTint(name: string): [string, string] {
-  let h = 0
-  for (let i = 0; i < name.length; i++) h = (31 * h + name.charCodeAt(i)) >>> 0
-  return LIB_FALLBACK_TINTS[h % LIB_FALLBACK_TINTS.length]
+type LibEntry = {
+  name: string; latin: string; desc: string
+  light: string; water: string
+  toxShort: string; toxicity: string
+  care: string; hardiness: string; note: string
+  tag: string; badge: string; photo?: string
 }
 
-type LibPlant = typeof PLANTS[number]
+const FEATURED: LibEntry[] = PLANTS.map(p => ({
+  name: p.name, latin: p.latin, desc: p.desc,
+  light: p.light, water: p.water,
+  toxShort: p.toxShort, toxicity: '',
+  care: p.care, hardiness: p.hardiness, note: p.note,
+  tag: p.tag, badge: p.badge, photo: p.photo,
+}))
+
+const LIBRARY: LibEntry[] = (() => {
+  const seen = new Set(FEATURED.map(p => p.name.toLowerCase()))
+  const rest = SPECIES
+    .filter(s => !seen.has(s.name.toLowerCase()))
+    .map(s => ({
+      name: s.name, latin: s.latin, desc: s.desc,
+      light: s.light, water: s.water,
+      toxShort: s.toxShort, toxicity: s.toxicity,
+      care: s.care, hardiness: s.hardiness, note: s.note,
+      tag: s.tag, badge: s.badge,
+    }))
+  return [...FEATURED, ...rest]
+})()
+
+/* Deep-green fallback tiles for species without embedded photography —
+ * deterministic per name so a species always wears the same tile. */
+const LIB_FALLBACKS: [string, string][] = [
+  ['#4A7539', '#22371D'], ['#55823A', '#33512C'],
+  ['#6FA14E', '#3B5B2C'], ['#3B5B2C', '#22371D'],
+]
+function fallbackTint(name: string): [string, string] {
+  let h = 0
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0
+  return LIB_FALLBACKS[h % LIB_FALLBACKS.length]
+}
+
+/* Ranked search across the whole library: exact → name-prefix → name-contains
+ * → latin → tag. Featured (photographed) entries edge ties. */
+function searchLibrary(raw: string): LibEntry[] {
+  const n = raw.trim().toLowerCase()
+  if (!n) return []
+  const scored: { p: LibEntry; s: number }[] = []
+  for (const p of LIBRARY) {
+    const name = p.name.toLowerCase()
+    const latin = p.latin.toLowerCase()
+    let s = 0
+    if (name === n) s = 100
+    else if (name.startsWith(n)) s = 80
+    else if (name.includes(n)) s = 60
+    else if (latin.startsWith(n)) s = 50
+    else if (latin.includes(n)) s = 40
+    else if (p.tag.toLowerCase().includes(n)) s = 20
+    if (!s) continue
+    if (p.photo) s += 1
+    scored.push({ p, s })
+  }
+  scored.sort((a, b) =>
+    b.s - a.s || a.p.name.length - b.p.name.length || a.p.name.localeCompare(b.p.name))
+  return scored.map(x => x.p)
+}
+
+type LibPlant = LibEntry
 
 function Library() {
   const [q, setQ] = useState('')
@@ -1173,34 +1255,11 @@ function Library() {
     return () => document.removeEventListener('pointerdown', on)
   }, [])
 
-  const matches = (t: string) => {
-    const n = t.trim().toLowerCase()
-    if (!n) return []
-    const scored: Array<{ p: LibPlant; s: number }> = []
-    for (const pl of PLANTS) {
-      const name = pl.name.toLowerCase()
-      const latin = pl.latin.toLowerCase()
-      let sc = 0
-      if (name === n) sc = 100
-      else if (name.startsWith(n)) sc = 80
-      else if (name.includes(n)) sc = 60
-      else if (latin.startsWith(n)) sc = 50
-      else if (latin.includes(n)) sc = 40
-      else if (pl.tag.toLowerCase().includes(n)) sc = 20
-      if (sc) {
-        if (pl.photo) sc += 1
-        scored.push({ p: pl, s: sc })
-      }
-    }
-    return scored
-      .sort((a, b) => b.s - a.s || a.p.name.length - b.p.name.length || a.p.name.localeCompare(b.p.name))
-      .map(x => x.p)
-  }
-  const sug = sugOpen ? matches(q).slice(0, 4) : []
+  const sug = sugOpen ? searchLibrary(q).slice(0, 6) : []
 
   const run = (pick?: LibPlant) => {
     if (!pick && !q.trim()) return
-    const p = pick ?? matches(q)[0] ?? PLANTS[0]
+    const p = pick ?? searchLibrary(q)[0] ?? LIBRARY[0]
     clearTimeout(runTimer.current)
     setQ(p.name); setSugOpen(false); setHi(-1); setThinking(true); setPlant(null)
     setSaved(false); setExported(false); setShared(false)
@@ -1222,7 +1281,7 @@ function Library() {
       <div className="lib__wash" aria-hidden="true" />
       <div className="lib__content wrap">
         <header className="lib__head">
-          <span className="chip chip--lime"><span className="dot" />The living library · 1,400+ species</span>
+          <span className="chip chip--lime"><span className="dot" />The living library · {LIBRARY.length.toLocaleString()} Canadian species</span>
           <h1 className="lib__title">Look up <em>any</em> plant.</h1>
           {hero && (
             <p className="lib__lede">
@@ -1245,13 +1304,13 @@ function Library() {
               <figure
                 className={`lib__photo${plant.photo ? '' : ' lib__photo--fallback'}`}
                 style={plant.photo ? undefined : (() => {
-                  const [a, b] = libFallbackTint(plant.name)
+                  const [a, b] = fallbackTint(plant.name)
                   return { background: `linear-gradient(150deg, ${a}, ${b})` }
                 })()}
               >
                 {plant.photo
                   ? <img src={plant.photo} alt={plant.name} />
-                  : <Leaf className="lib__leaf" size={84} strokeWidth={1.4} aria-hidden="true" />}
+                  : <Leaf className="lib__leaf" size={92} strokeWidth={1.3} aria-hidden="true" />}
                 <button className="lib__close" onClick={clear} aria-label="Clear result">
                   <X size={16} strokeWidth={2.4} />
                 </button>
@@ -1274,7 +1333,7 @@ function Library() {
                   </div>
                   <div className="lib__fact lib__fact--tox">
                     <b><ShieldCheck size={12} strokeWidth={2.4} /> Safety</b>
-                    <span>{plant.toxShort}</span>
+                    <span title={plant.toxicity || undefined}>{plant.toxShort}</span>
                   </div>
                 </div>
                 <div className="lib__duo">
@@ -1344,7 +1403,7 @@ function Library() {
           </form>
           {hero && (
             <div className="lib__chips">
-              {PLANTS.map(p => (
+              {FEATURED.map(p => (
                 <button key={p.name} type="button" onClick={() => run(p)}>{p.name}</button>
               ))}
             </div>
