@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import {
-  Camera, BookOpen, BellRing, Droplets, Sun, ThermometerSun, Plus,
+  Camera, BookOpen, BellRing, Droplets, Sun, Plus,
   Sparkles, MessageCircle, MapPin, CalendarHeart, Leaf, ArrowRight, ArrowUpRight,
   Moon, CloudRain, Mic, Send, ArrowUp,
   Search, X, ShieldCheck, Snowflake, Sprout, Heart, Download, Share2,
@@ -1136,6 +1136,16 @@ function Almanac() {
 
 const LIB_TINTS = ['#E9F0D2', '#F2E2B4', '#EDD6C3', '#E3EDD7']
 
+/* name-hashed gradient pair for plants without photography */
+const LIB_FALLBACK_TINTS: Array<[string, string]> = [
+  ['#4A7539', '#22371D'], ['#55823A', '#33512C'], ['#6FA14E', '#3B5B2C'], ['#3B5B2C', '#22371D'],
+]
+function libFallbackTint(name: string): [string, string] {
+  let h = 0
+  for (let i = 0; i < name.length; i++) h = (31 * h + name.charCodeAt(i)) >>> 0
+  return LIB_FALLBACK_TINTS[h % LIB_FALLBACK_TINTS.length]
+}
+
 type LibPlant = typeof PLANTS[number]
 
 function Library() {
@@ -1166,8 +1176,25 @@ function Library() {
   const matches = (t: string) => {
     const n = t.trim().toLowerCase()
     if (!n) return []
-    return PLANTS.filter(p =>
-      p.name.toLowerCase().includes(n) || p.latin.toLowerCase().includes(n) || p.tag.toLowerCase().includes(n))
+    const scored: Array<{ p: LibPlant; s: number }> = []
+    for (const pl of PLANTS) {
+      const name = pl.name.toLowerCase()
+      const latin = pl.latin.toLowerCase()
+      let sc = 0
+      if (name === n) sc = 100
+      else if (name.startsWith(n)) sc = 80
+      else if (name.includes(n)) sc = 60
+      else if (latin.startsWith(n)) sc = 50
+      else if (latin.includes(n)) sc = 40
+      else if (pl.tag.toLowerCase().includes(n)) sc = 20
+      if (sc) {
+        if (pl.photo) sc += 1
+        scored.push({ p: pl, s: sc })
+      }
+    }
+    return scored
+      .sort((a, b) => b.s - a.s || a.p.name.length - b.p.name.length || a.p.name.localeCompare(b.p.name))
+      .map(x => x.p)
   }
   const sug = sugOpen ? matches(q).slice(0, 4) : []
 
@@ -1215,8 +1242,16 @@ function Library() {
           {plant !== null && (
             <article className="lib__card" onPointerMove={pcardMove} onPointerLeave={pcardLeave}>
               <div className="pcard__glare" aria-hidden="true" />
-              <figure className="lib__photo">
-                <img src={plant.photo} alt={plant.name} />
+              <figure
+                className={`lib__photo${plant.photo ? '' : ' lib__photo--fallback'}`}
+                style={plant.photo ? undefined : (() => {
+                  const [a, b] = libFallbackTint(plant.name)
+                  return { background: `linear-gradient(150deg, ${a}, ${b})` }
+                })()}
+              >
+                {plant.photo
+                  ? <img src={plant.photo} alt={plant.name} />
+                  : <Leaf className="lib__leaf" size={84} strokeWidth={1.4} aria-hidden="true" />}
                 <button className="lib__close" onClick={clear} aria-label="Clear result">
                   <X size={16} strokeWidth={2.4} />
                 </button>
