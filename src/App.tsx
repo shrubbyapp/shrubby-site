@@ -1166,6 +1166,7 @@ type LibEntry = {
   toxShort: string; toxicity: string
   care: string; hardiness: string; note: string
   tag: string; badge: string; photo?: string
+  featured?: boolean
 }
 
 const FEATURED: LibEntry[] = PLANTS.map(p => ({
@@ -1173,7 +1174,7 @@ const FEATURED: LibEntry[] = PLANTS.map(p => ({
   light: p.light, water: p.water,
   toxShort: p.toxShort, toxicity: '',
   care: p.care, hardiness: p.hardiness, note: p.note,
-  tag: p.tag, badge: p.badge, photo: p.photo,
+  tag: p.tag, badge: p.badge, photo: p.photo, featured: true,
 }))
 
 const LIBRARY: LibEntry[] = (() => {
@@ -1214,11 +1215,15 @@ function searchLibrary(raw: string): LibEntry[] {
     let s = 0
     if (name === n) s = 100
     else if (name.startsWith(n)) s = 80
+    else if (name.split(' ').some(w => w.startsWith(n))) s = 70
     else if (name.includes(n)) s = 60
     else if (latin.startsWith(n)) s = 50
     else if (latin.includes(n)) s = 40
     else if (p.tag.toLowerCase().includes(n)) s = 20
     if (!s) continue
+    /* the six featured cards carry embedded photography and hand-written
+     * copy — worth surfacing over generic prefix matches */
+    if (p.featured) s += 15
     if (p.photo) s += 1
     scored.push({ p, s })
   }
