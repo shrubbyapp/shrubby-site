@@ -409,32 +409,29 @@ const REPLIES = [
 
 /* ---------------- ask loop: question typed, answer in the blue bubble ---------------- */
 
-type AskFx = 'maple' | 'snow' | 'petal' | 'bfly' | 'rain' | 'bee'
-
-const DEMO_QA: Array<{ q: string; a: string; fx: AskFx }> = [
-  { q: 'When can I plant outside?', a: 'After the May two-four', fx: 'petal' },
-  { q: 'Best tree for fall colour?', a: 'Sugar maple. Not close', fx: 'maple' },
-  { q: 'Hydrangeas in zone 3?', a: '‘Annabelle’ — prairie tough', fx: 'snow' },
-  { q: 'How do I get monarchs?', a: 'Swamp milkweed, skip the spray', fx: 'bfly' },
-  { q: 'Natives for shade?', a: 'Wild Ginger and Foamflower', fx: 'petal' },
-  { q: 'Plants for rainy Vancouver?', a: 'Sword ferns love the drizzle', fx: 'rain' },
-  { q: 'Toughest prairie perennial?', a: 'Daylilies. Nearly unkillable', fx: 'bee' },
+const DEMO_QA: Array<{ q: string; a: string }> = [
+  { q: 'When can I plant outside?', a: 'After the May two-four' },
+  { q: 'Best tree for fall colour?', a: 'Sugar maple. Not close' },
+  { q: 'Hydrangeas in zone 3?', a: '‘Annabelle’ — prairie tough' },
+  { q: 'How do I get monarchs?', a: 'Swamp milkweed, skip the spray' },
+  { q: 'Natives for shade?', a: 'Wild Ginger and Foamflower' },
+  { q: 'Plants for rainy Vancouver?', a: 'Sword ferns love the drizzle' },
+  { q: 'Toughest prairie perennial?', a: 'Daylilies. Nearly unkillable' },
 ]
 
 function useAskLoop() {
   const [q, setQ] = useState('')
   const [answer, setAnswer] = useState<string | null>(null)
-  const [fx, setFx] = useState<AskFx | null>(null)
   const skipRef = useRef<(() => void) | null>(null)
   const fastRef = useRef(false)
+  const waitTimer = useRef<number | undefined>(undefined)
   const skip = useCallback(() => { fastRef.current = true; skipRef.current?.() }, [])
   useEffect(() => {
     if (REDUCE) { setQ(DEMO_QA[0].q); setAnswer(DEMO_QA[0].a); return }
     let alive = true
-    const timers: number[] = []
     const wait = (ms: number) => new Promise<void>(r => {
       const t = window.setTimeout(done, ms)
-      timers.push(t)
+      waitTimer.current = t
       function done() {
         clearTimeout(t)
         if (skipRef.current === done) skipRef.current = null
@@ -445,7 +442,7 @@ function useAskLoop() {
     ;(async () => {
       let idx = 0
       while (alive) {
-        const { q: question, a: reply, fx: effect } = DEMO_QA[idx % DEMO_QA.length]
+        const { q: question, a: reply } = DEMO_QA[idx % DEMO_QA.length]
         fastRef.current = false
         for (let i = 1; i <= question.length && alive; i++) {
           if (fastRef.current) { setQ(question); break }
@@ -453,9 +450,9 @@ function useAskLoop() {
         }
         await wait(fastRef.current ? 220 : 500)
         if (!alive) break
-        setAnswer(reply); setFx(effect)
+        setAnswer(reply)
         await wait(3600) /* a tap cuts this short */
-        setAnswer(null); setFx(null)
+        setAnswer(null)
         await wait(300)
         for (let i = question.length; i >= 0 && alive; i--) {
           if (fastRef.current) { setQ(''); break }
@@ -465,10 +462,10 @@ function useAskLoop() {
         idx++
       }
     })()
-    return () => { alive = false; timers.forEach(clearTimeout); skipRef.current = null }
+    return () => { alive = false; clearTimeout(waitTimer.current); skipRef.current = null }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  return { q, answer, fx, skip }
+  return { q, answer }
 }
 
 /* ---------------- Shrubby's brain — the real ask engine ----------------
@@ -476,77 +473,77 @@ function useAskLoop() {
  * search engine: keyword-scored entries, prefix-boundary matching, ranked
  * suggestions. Small, honest, Canadian. */
 
-type BrainEntry = { q: string; keys: string[]; a: string; fx: AskFx | null }
+type BrainEntry = { q: string; keys: string[]; a: string }
 
 /* Answers are written to fit ONE bubble line (~45 chars) — Shrubby stays visible. */
 const BRAIN: BrainEntry[] = [
-  { q: 'When should I plant tomatoes?', keys: ['tomato'], fx: 'petal',
+  { q: 'When should I plant tomatoes?', keys: ['tomato'],
     a: 'Start inside April, out after last frost.' },
-  { q: 'When is it safe to plant outside?', keys: ['when plant', 'plant outside', 'last frost', 'safe to plant', 'may long', 'planting time'], fx: 'petal',
+  { q: 'When is it safe to plant outside?', keys: ['when plant', 'plant outside', 'last frost', 'safe to plant', 'may long', 'planting time'],
     a: 'After the May long weekend, coast to coast.' },
-  { q: 'What zone am I in?', keys: ['zone', 'hardiness'], fx: 'snow',
+  { q: 'What zone am I in?', keys: ['zone', 'hardiness'],
     a: 'Zones 0–9. Victoria 9, Winnipeg 3. Your city?' },
-  { q: 'What grows in shade?', keys: ['shade', 'shady', 'north side', 'dark corner'], fx: 'petal',
+  { q: 'What grows in shade?', keys: ['shade', 'shady', 'north side', 'dark corner'],
     a: 'Wild Ginger, Foamflower, Ostrich Fern' },
-  { q: 'How do I attract monarchs?', keys: ['monarch', 'butterfly', 'butterflies', 'milkweed'], fx: 'bfly',
+  { q: 'How do I attract monarchs?', keys: ['monarch', 'butterfly', 'butterflies', 'milkweed'],
     a: 'Swamp milkweed, skip the spray' },
-  { q: 'How do I help the bees?', keys: ['bee', 'pollinator'], fx: 'bee',
+  { q: 'How do I help the bees?', keys: ['bee', 'pollinator'],
     a: 'Coneflower, bee balm, asters — natives' },
-  { q: 'Best tree for fall colour?', keys: ['fall', 'autumn', 'maple'], fx: 'maple',
+  { q: 'Best tree for fall colour?', keys: ['fall', 'autumn', 'maple'],
     a: 'Sugar maple. It’s on the flag' },
-  { q: 'Why are the leaves turning yellow?', keys: ['yellow'], fx: 'rain',
+  { q: 'Why are the leaves turning yellow?', keys: ['yellow'],
     a: 'Kindness overdone — ease off the water.' },
-  { q: 'Why is my plant drooping?', keys: ['droop', 'wilt', 'sad', 'floppy'], fx: 'rain',
+  { q: 'Why is my plant drooping?', keys: ['droop', 'wilt', 'sad', 'floppy'],
     a: 'Let the top inch dry, then water deep.' },
-  { q: 'How often should I water?', keys: ['water', 'how often'], fx: 'rain',
+  { q: 'How often should I water?', keys: ['water', 'how often'],
     a: 'Deep and rarely — once a week, at roots.' },
-  { q: 'When should I fertilize?', keys: ['fertiliz', 'feed', 'fertilis'], fx: 'petal',
+  { q: 'When should I fertilize?', keys: ['fertiliz', 'feed', 'fertilis'],
     a: 'Feed through spring, stop by late summer.' },
-  { q: 'When do I prune?', keys: ['prune', 'pruning', 'trim'], fx: 'petal',
+  { q: 'When do I prune?', keys: ['prune', 'pruning', 'trim'],
     a: 'Right after bloom — or in late winter.' },
-  { q: 'Do I need mulch?', keys: ['mulch'], fx: null,
+  { q: 'Do I need mulch?', keys: ['mulch'],
     a: '5–8 cm of bark, kept off the stems.' },
-  { q: 'Something is eating my hostas!', keys: ['hosta', 'slug', 'holes in the leaves', 'eating my'], fx: null,
+  { q: 'Something is eating my hostas!', keys: ['hosta', 'slug', 'holes in the leaves', 'eating my'],
     a: 'Slugs. Beer traps and copper tape.' },
-  { q: 'How do I deal with aphids?', keys: ['aphid', 'bugs on'], fx: 'bee',
+  { q: 'How do I deal with aphids?', keys: ['aphid', 'bugs on'],
     a: 'Hose blast, then ladybugs finish the job.' },
-  { q: 'What do deer leave alone?', keys: ['deer'], fx: null,
+  { q: 'What do deer leave alone?', keys: ['deer'],
     a: 'Daffodils, lavender, sage. Never tulips.' },
-  { q: 'Is it safe for my dog?', keys: ['dog', 'cat', 'pet', 'toxic', 'poison'], fx: null,
+  { q: 'Is it safe for my dog?', keys: ['dog', 'cat', 'pet', 'toxic', 'poison'],
     a: 'Serviceberry is safe. Lilies aren’t — cats!' },
-  { q: 'Will hydrangeas survive here?', keys: ['hydrangea', 'annabelle'], fx: 'snow',
+  { q: 'Will hydrangeas survive here?', keys: ['hydrangea', 'annabelle'],
     a: '‘Annabelle’ shrugs at zone 3' },
-  { q: 'Frost tonight — what do I do?', keys: ['frost', 'freez', 'cold snap'], fx: 'snow',
+  { q: 'Frost tonight — what do I do?', keys: ['frost', 'freez', 'cold snap'],
     a: 'Bedsheets tonight, off at dawn. No plastic.' },
-  { q: 'How do I winterize the garden?', keys: ['winter', 'overwinter'], fx: 'snow',
+  { q: 'How do I winterize the garden?', keys: ['winter', 'overwinter'],
     a: 'Mulch after freeze-up; leave the seed heads.' },
-  { q: 'What natives should I plant?', keys: ['native', 'indigenous'], fx: 'petal',
+  { q: 'What natives should I plant?', keys: ['native', 'indigenous'],
     a: 'Coneflower, columbine, serviceberry, ginger.' },
-  { q: 'A tree for a small yard?', keys: ['small tree', 'small yard', 'front yard'], fx: 'petal',
+  { q: 'A tree for a small yard?', keys: ['small tree', 'small yard', 'front yard'],
     a: 'Serviceberry — four seasons, one small tree.' },
-  { q: 'Best plant for a beginner?', keys: ['beginner', 'easy', 'first plant', 'unkillable', 'low maintenance'], fx: 'bee',
+  { q: 'Best plant for a beginner?', keys: ['beginner', 'easy', 'first plant', 'unkillable', 'low maintenance'],
     a: 'Stella d’Oro daylily. Nearly unkillable.' },
-  { q: 'What grows on a balcony?', keys: ['balcony', 'container', 'pot', 'condo', 'patio'], fx: 'petal',
+  { q: 'What grows on a balcony?', keys: ['balcony', 'container', 'pot', 'condo', 'patio'],
     a: 'Daylilies, herbs, coneflower — in pots.' },
-  { q: 'How do I invite hummingbirds?', keys: ['hummingbird', 'columbine'], fx: 'bfly',
+  { q: 'How do I invite hummingbirds?', keys: ['hummingbird', 'columbine'],
     a: 'Wild columbine — built for their beaks.' },
-  { q: 'My basil is struggling.', keys: ['basil', 'herb'], fx: 'petal',
+  { q: 'My basil is struggling.', keys: ['basil', 'herb'],
     a: 'Warmth plus a weekly pinch of the tops.' },
-  { q: 'My lawn is a mess.', keys: ['lawn', 'grass'], fx: 'bee',
+  { q: 'My lawn is a mess.', keys: ['lawn', 'grass'],
     a: 'Overseed white clover — feeds the bees.' },
-  { q: 'How do I start compost?', keys: ['compost'], fx: null,
+  { q: 'How do I start compost?', keys: ['compost'],
     a: 'Browns + greens, turned monthly. Black gold.' },
-  { q: 'What soil for a raised bed?', keys: ['raised bed', 'soil mix', 'what soil'], fx: null,
+  { q: 'What soil for a raised bed?', keys: ['raised bed', 'soil mix', 'what soil'],
     a: 'Thirds: topsoil, compost, coir.' },
-  { q: 'What thrives on the wet coast?', keys: ['vancouver', 'victoria', 'rainy', 'wet coast', 'bc '], fx: 'rain',
+  { q: 'What thrives on the wet coast?', keys: ['vancouver', 'victoria', 'rainy', 'wet coast', 'bc '],
     a: 'Sword ferns, salal, huckleberry' },
-  { q: 'What survives the prairies?', keys: ['prairie', 'winnipeg', 'saskat', 'regina', 'manitoba', 'alberta', 'edmonton', 'calgary'], fx: 'snow',
+  { q: 'What survives the prairies?', keys: ['prairie', 'winnipeg', 'saskat', 'regina', 'manitoba', 'alberta', 'edmonton', 'calgary'],
     a: 'Daylily, coneflower, Karl Foerster grass.' },
-  { q: 'Who are you?', keys: ['who are you', 'what are you', 'shrubby'], fx: 'petal',
+  { q: 'Who are you?', keys: ['who are you', 'what are you', 'shrubby'],
     a: 'A little green heart with serious botany' },
-  { q: 'Say hi', keys: ['hello', 'hi', 'hey', 'bonjour'], fx: 'petal',
+  { q: 'Say hi', keys: ['hello', 'hi', 'hey', 'bonjour'],
     a: 'Hello! Ask me anything green.' },
-  { q: 'Thanks, Shrubby', keys: ['thank', 'merci'], fx: 'petal',
+  { q: 'Thanks, Shrubby', keys: ['thank', 'merci'],
     a: 'Anytime — that’s what garden friends do' },
 ]
 
@@ -569,7 +566,7 @@ function brainScore(nq: string, e: BrainEntry): number {
   return s
 }
 
-function answerQuery(raw: string, fbCounter: { current: number }): { a: string; fx: AskFx | null } {
+function answerQuery(raw: string, fbCounter: { current: number }): string {
   const nq = brainNorm(raw)
   let best: BrainEntry | null = null
   let bs = 0
@@ -577,8 +574,8 @@ function answerQuery(raw: string, fbCounter: { current: number }): { a: string; 
     const s = brainScore(nq, e)
     if (s > bs) { bs = s; best = e }
   }
-  if (best) return { a: best.a, fx: best.fx }
-  return { a: BRAIN_FALLBACKS[fbCounter.current++ % BRAIN_FALLBACKS.length], fx: null }
+  if (best) return best.a
+  return BRAIN_FALLBACKS[fbCounter.current++ % BRAIN_FALLBACKS.length]
 }
 
 /* ---------------- sections ---------------- */
@@ -756,7 +753,7 @@ function Companion() {
   const { q, answer } = useAskLoop()
   const [live, setLive] = useState(false)
   const [qv, setQv] = useState('')
-  const [reply, setReply] = useState<{ a: string; fx: AskFx | null } | null>(null)
+  const [reply, setReply] = useState<string | null>(null)
   const liveInput = useRef<HTMLInputElement>(null)
   const fbCounter = useRef(0)
   /* text-only bubble: no close button — the answer clears itself */
@@ -829,8 +826,8 @@ function Companion() {
                   <div className="companion__glare" ref={glareRef} aria-hidden="true" />
                   {live
                     ? reply !== null && (
-                        <div className="companion__say companion__say--live" key={reply.a} role="status" aria-live="polite">
-                          {reply.a}
+                        <div className="companion__say companion__say--live" key={reply} role="status" aria-live="polite">
+                          {reply}
                         </div>
                       )
                     : answer !== null && <div className="companion__say" key={answer}>{answer}</div>}
@@ -914,7 +911,7 @@ function Companion() {
 
 /* pointer 3D tilt + travelling glare — same hand as the plant cards */
 function pcardMove(e: React.PointerEvent) {
-  if (REDUCE || e.pointerType === 'touch') return
+  if (REDUCE || e.pointerType === 'touch' || e.buttons !== 0) return
   const el = e.currentTarget as HTMLElement
   const r = el.getBoundingClientRect()
   const x = (e.clientX - r.left) / r.width - 0.5
@@ -1149,9 +1146,22 @@ function Library() {
   const [saved, setSaved] = useState(false)
   const [exported, setExported] = useState(false)
   const [shared, setShared] = useState(false)
-  const timers = useRef<number[]>([])
+  const [hi, setHi] = useState(-1)
   const runTimer = useRef<number | undefined>(undefined)
-  useEffect(() => () => { timers.current.forEach(clearTimeout); clearTimeout(runTimer.current) }, [])
+  const flashTimer = useRef<Record<string, number>>({})
+  const searchRef = useRef<HTMLFormElement>(null)
+  useEffect(() => () => {
+    clearTimeout(runTimer.current)
+    Object.values(flashTimer.current).forEach(clearTimeout)
+  }, [])
+  /* clicking anywhere outside the search dismisses the suggestions */
+  useEffect(() => {
+    const on = (e: PointerEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSugOpen(false)
+    }
+    document.addEventListener('pointerdown', on)
+    return () => document.removeEventListener('pointerdown', on)
+  }, [])
 
   const matches = (t: string) => {
     const n = t.trim().toLowerCase()
@@ -1165,14 +1175,15 @@ function Library() {
     if (!pick && !q.trim()) return
     const p = pick ?? matches(q)[0] ?? PLANTS[0]
     clearTimeout(runTimer.current)
-    setQ(p.name); setSugOpen(false); setThinking(true); setPlant(null)
+    setQ(p.name); setSugOpen(false); setHi(-1); setThinking(true); setPlant(null)
     setSaved(false); setExported(false); setShared(false)
     runTimer.current = window.setTimeout(() => { setThinking(false); setPlant(p) }, REDUCE ? 120 : 950)
   }
   const clear = () => { clearTimeout(runTimer.current); setPlant(null); setThinking(false); setQ(''); setSugOpen(false) }
-  const flash = (set: (v: boolean) => void) => {
+  const flash = (key: string, set: (v: boolean) => void) => {
     set(true)
-    timers.current.push(window.setTimeout(() => set(false), 1800))
+    clearTimeout(flashTimer.current[key])
+    flashTimer.current[key] = window.setTimeout(() => set(false), 1800)
   }
   const hero = !thinking && plant === null
 
@@ -1247,10 +1258,10 @@ function Library() {
                     <Heart size={15} strokeWidth={2.2} fill={saved ? '#fff' : 'none'} />
                     {saved ? 'Saved to my garden' : 'Add to my garden'}
                   </button>
-                  <button className="lib__ghost" onClick={() => flash(setExported)}>
+                  <button className="lib__ghost" onClick={() => flash('exp', setExported)}>
                     <Download size={15} strokeWidth={2.2} /> {exported ? 'Exported' : 'Export'}
                   </button>
-                  <button className="lib__ghost" onClick={() => flash(setShared)}>
+                  <button className="lib__ghost" onClick={() => flash('share', setShared)}>
                     <Share2 size={15} strokeWidth={2.2} /> {shared ? 'Link copied' : 'Share'}
                   </button>
                 </div>
@@ -1261,22 +1272,33 @@ function Library() {
 
         <div className="lib__searchrow">
           <form
+            ref={searchRef}
             className="lib__search"
-            onSubmit={e => { e.preventDefault(); run() }}
+            onSubmit={e => { e.preventDefault(); run(hi >= 0 ? sug[hi] : undefined) }}
           >
             <Search size={19} strokeWidth={2.1} className="lib__searchico" />
             <input
               value={q}
-              onChange={e => { setQ(e.target.value); setSugOpen(true) }}
-              onKeyDown={e => { if (e.key === 'Escape') setSugOpen(false) }}
+              onChange={e => { setQ(e.target.value); setSugOpen(true); setHi(-1) }}
+              onKeyDown={e => {
+                if (e.key === 'Escape') { setSugOpen(false); setHi(-1) }
+                else if (e.key === 'ArrowDown' && sug.length) { e.preventDefault(); setHi(h => (h + 1) % sug.length) }
+                else if (e.key === 'ArrowUp' && sug.length) { e.preventDefault(); setHi(h => (h - 1 + sug.length) % sug.length) }
+              }}
               placeholder="Search a plant — try “serviceberry”"
               aria-label="Search the plant library"
+              role="combobox" aria-expanded={sug.length > 0} aria-autocomplete="list"
             />
             <button type="submit" className="lib__go">Search</button>
             {sug.length > 0 && (
-              <div className="lib__sug">
+              <div className="lib__sug" role="listbox" aria-label="Matching plants">
                 {sug.map((p, i) => (
-                  <button type="button" key={p.name} onClick={() => run(p)}>
+                  <button
+                    type="button" key={p.name} role="option" aria-selected={i === hi}
+                    className={i === hi ? 'is-hi' : ''}
+                    onPointerEnter={() => setHi(i)}
+                    onClick={() => run(p)}
+                  >
                     <span className="lib__sugini" style={{ background: LIB_TINTS[i % 4] }}>{p.name[0]}</span>
                     <span className="lib__sugtxt"><b>{p.name}</b><i>{p.latin}</i></span>
                     <span className="lib__sugtag">{p.tag}</span>
