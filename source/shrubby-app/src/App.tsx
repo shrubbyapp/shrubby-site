@@ -7,7 +7,6 @@ import {
 } from 'lucide-react'
 import { FIELD_JPG, SHRUB_MP4, FIELD_MP4, HERO2_MP4, HERO2_JPG } from './media'
 import { PHOTO_DAYLILY, PHOTO_FERN, PHOTO_SUSAN, PHOTO_COLUMBINE, PHOTO_CONEFLOWER, PHOTO_SERVICEBERRY } from './photos'
-import { Pip } from './ladybug'
 import { CompanionSky } from './companion-sky'
 import { DASH_HTML } from './dashboard'
 
@@ -1416,7 +1415,6 @@ function FieldFooter() {
         <a href="mailto:hello@shrubby.app">hello@shrubby.app</a>
         <a href="#/guide">Read the making →</a>
       </div>
-      <Pip />
     </footer>
   )
 }
