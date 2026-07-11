@@ -16,7 +16,7 @@
 The landing site and the product dashboard share these tokens exactly — change them in both places or not at all.
 
 ## Section journey (gradients, never solid seams)
-Every band's last gradient stop = next band's first stop. Order: garden film hero → forest-900 companion → forest-700 practice → sage almanac → forest-950 night → **dawn-break into honeydew CTA** → meadow film footer (100svh, floating dark-glass pill bar). All sections min-height 100svh, band padding 7vh.
+Every band's last gradient stop = next band's first stop. Order: garden film hero → forest-900 companion → forest-700 practice → sage almanac → forest-950 night → **dawn-break into honeydew CTA** → meadow film footer (100svh, full-bleed cream bar). All sections min-height 100svh, band padding 7vh.
 
 ## Material
 Liquid glass via `--bfN` custom-property blur tokens ONLY (minifiers strip filter-list spaces — never inline `backdrop-filter` values). Frost cards: milky white on dark grounds, ink text. Botany-glass plant cards: photo fills card, green glass panel, white text, bud latin names.
@@ -28,15 +28,7 @@ Liquid glass via `--bfN` custom-property blur tokens ONLY (minifiers strip filte
 - Everything honours `prefers-reduced-motion`.
 
 ## Components
-Soft ask console (`.ask2`, white layered, embossed squircles), clay carousels, glass back-to-top circle (`TopButton`, appears past 0.7vh), auto-hiding dark pill nav.
-
-## Fauna (Pip & friends)
-- Two deliberate registers: flat-minimal clay critters as *marks* (companion `.lbug`, bees, butterflies) vs **Pip**, the footer ladybug, as a *character* (face, wardrobe, behavior brain in `src/ladybug.tsx` + `src/almanac-bug.ts`).
-- Pip's clay recipe: elytra radial `#C86A47→#B9502F→#7E2E17` (the site's clay-red family, never the glossy ramp), ink `#22371D`, matte highlights ≤ .16 opacity, SVG-internal shading only (no CSS filters). Eyes ≈38% head width, pupil travel ≤30% of eye radius, one fixed specular dot.
-- Motion signature: 3-beat acts (anticipation / action / settle); takeoffs always crouch first (250ms); landings overshoot-settle `cubic-bezier(.34,1.56,.64,1)` + 120ms squash; flights are Catmull-Rom splines with tangent banking (never waypoint polylines); every duration × rand(0.65–1.6).
-- Calendar: national holidays + meteorological seasons + date-seeded synthetic weather (`almanac-bug.ts`, unit-swept). Prop precedence: Remembrance > holiday > season > none. Remembrance Day = poppy, no antics.
-- Transform channels are law: `.pip` translate, `.pip__pose` facing/banking/squash, `.pip__body` breathe, wings/legs/lids CSS loops. One writer per element.
-- Everything gated: IntersectionObserver + `document.hidden` + `prefers-reduced-motion` (static perched Pip, wardrobe still correct). QA drives `window.__pip` (act/state/setDate/log).
+Soft ask console (`.ask2`, white layered, embossed squircles), clay carousels, sprout back-to-top (pot→sprout→leaves→mascot by scroll depth, appears past 0.7vh), auto-hiding dark pill nav.
 
 ## Rules
 1. New videos: compress with `avconvert` only if it shrinks them; always pose-scan for loop cuts.

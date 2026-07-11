@@ -7,8 +7,8 @@ import {
 } from 'lucide-react'
 import { FIELD_JPG, SHRUB_MP4, FIELD_MP4, HERO2_MP4, HERO2_JPG } from './media'
 import { PHOTO_DAYLILY, PHOTO_FERN, PHOTO_SUSAN, PHOTO_COLUMBINE, PHOTO_CONEFLOWER, PHOTO_SERVICEBERRY } from './photos'
-import { Pip } from './ladybug'
 import { CompanionSky } from './companion-sky'
+import { DASH_HTML } from './dashboard'
 
 /* ---------------- helpers ---------------- */
 
@@ -608,6 +608,7 @@ function Nav({ route }: { route: string }) {
         <a className="nav__link" data-sec href="#practice" onClick={goHomeSection('practice')}>Practice</a>
         <a className="nav__link" data-sec href="#almanac" onClick={goHomeSection('almanac')}>Almanac</a>
         <a className={`nav__link ${route === 'library' ? 'is-on' : ''}`} href="#/library">Library</a>
+        <a className={`nav__link ${route === 'app' ? 'is-on' : ''}`} href="#/app">The App</a>
         <a className={`nav__link ${route === 'guide' ? 'is-on' : ''}`} href="#/guide">The Making</a>
         <button
           className="nav__cta"
@@ -1295,6 +1296,29 @@ function Library() {
   )
 }
 
+/* ---------------- the app — dashboard showcase (#/app) ----------------
+ * The four phone screens are the authoritative Clay & Glass dashboard model
+ * (Brain/shrubby-redesign.html), auto-ported: classes collision-renamed,
+ * CSS scoped under .dash, display face swapped to Bricolage. Static, trusted,
+ * local markup — injected verbatim so the model stays easy to re-sync. */
+function AppShowcase() {
+  return (
+    <main className="appx">
+      <div className="wrap">
+        <header className="appx__head">
+          <span className="chip chip--lime"><span className="dot" />The app · iOS · Android · Web</span>
+          <h1 className="appx__title">The whole garden, <em>in your pocket</em>.</h1>
+          <p className="appx__lede">
+            The same clay and glass, sized for a thumb — home, plant detail, scan
+            and the season's schedule, exactly as they ship.
+          </p>
+        </header>
+        <div className="dash" dangerouslySetInnerHTML={{ __html: DASH_HTML }} />
+      </div>
+    </main>
+  )
+}
+
 const NIGHTS = [
   {
     icon: <Sparkles size={22} />,
@@ -1391,7 +1415,6 @@ function FieldFooter() {
         <a href="mailto:hello@shrubby.app">hello@shrubby.app</a>
         <a href="#/guide">Read the making →</a>
       </div>
-      <Pip />
     </footer>
   )
 }
@@ -1515,6 +1538,7 @@ function useHashRoute() {
   const get = useCallback(() => {
     if (window.location.hash.startsWith('#/guide')) return 'guide'
     if (window.location.hash.startsWith('#/library')) return 'library'
+    if (window.location.hash.startsWith('#/app')) return 'app'
     return 'home'
   }, [])
   const [route, setRoute] = useState(get)
@@ -1548,6 +1572,8 @@ export default function App() {
         </main>
       ) : route === 'library' ? (
         <Library />
+      ) : route === 'app' ? (
+        <AppShowcase />
       ) : (
         <Guide />
       )}
