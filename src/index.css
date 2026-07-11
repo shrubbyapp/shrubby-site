@@ -529,30 +529,7 @@ main,footer,.nav,.vine{position:relative;z-index:1}
   border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow-soft), inset 0 1px 0 #fff;
   color:var(--lime-ink);letter-spacing:.08em;
 }
-
-/* ================= Guide ================= */
-.guide{position:relative;z-index:1;min-height:100svh;padding:140px 0 90px}
-.guide__title{font-size:clamp(2.8rem,7vw,5.4rem);font-weight:800;letter-spacing:-.04em;color:var(--ink);margin:16px 0 14px}
-.guide__lead{max-width:58ch;font-size:1.15rem;color:var(--ink-soft)}
-.guide__steps{margin-top:60px;display:grid;gap:16px}
-.gstep{
-  display:grid;grid-template-columns:96px 1fr;gap:22px;align-items:start;
-  background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.46));
-  -webkit-backdrop-filter:var(--bf12);backdrop-filter:var(--bf12);
-  border:1px solid rgba(255,255,255,.9);
-  border-radius:var(--r-lg);padding:30px;
-  box-shadow:var(--shadow-soft), inset 0 1.5px 0 #fff;
-}
 @media(max-width:680px){.gstep{grid-template-columns:1fr}}
-.gstep__num{
-  width:64px;height:64px;border-radius:22px 22px 22px 6px;display:grid;place-items:center;
-  font-family:'Bricolage Grotesque';font-weight:800;font-size:1.5rem;background:var(--lime);color:var(--lime-ink)
-}
-.gstep:nth-child(even) .gstep__num{background:var(--forest-700);color:var(--lime)}
-.gstep h3{font-size:1.5rem;font-weight:800;margin-bottom:8px;color:var(--ink)}
-.gstep p{color:var(--ink-soft);max-width:64ch}
-.gstep code{background:var(--sage-100);padding:2px 7px;border-radius:7px;font-size:.88em}
-.gstep__tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .gtag{font-size:.76rem;font-weight:700;padding:6px 13px;border-radius:100px;background:var(--sage-100);color:var(--ink)}
 .gtag--warm{background:#F6E7CB;color:var(--terra-deep)}
 .gswatches{display:flex;gap:10px;margin-top:16px;margin-bottom:24px;flex-wrap:wrap}
@@ -571,7 +548,6 @@ main,footer,.nav,.vine{position:relative;z-index:1}
   .rev{opacity:1;transform:none}
   html{scroll-behavior:auto}
 }
-
 
 /* ================= Clay carousel ================= */
 .car{position:relative;outline:none}
@@ -665,7 +641,6 @@ main,footer,.nav,.vine{position:relative;z-index:1}
   100%{transform:none}
 }
 
-
 /* ================= Finishing details ================= */
 html{scrollbar-color:rgba(111,161,78,.65) rgba(51,81,44,.15);scrollbar-width:thin}
 ::-webkit-scrollbar{width:11px}
@@ -732,8 +707,6 @@ html{scrollbar-color:rgba(111,161,78,.65) rgba(51,81,44,.15);scrollbar-width:thi
   75%{transform:translate(-70px,26px) rotate(9deg)}
 }
 @media(max-width:760px){.cta__bfly{right:6%;top:11vh}}
-
-
 
 /* ================= Ask demo — white chat card ================= */
 .askdemo__zone{font-size:.74rem;font-weight:700;color:var(--leaf);letter-spacing:.02em}
@@ -1067,7 +1040,6 @@ html{scrollbar-color:rgba(111,161,78,.65) rgba(51,81,44,.15);scrollbar-width:thi
 .appx__title{font-size:clamp(2.5rem,6vw,4.6rem);font-weight:800;letter-spacing:-.04em;color:var(--ink);margin:14px 0 0}
 .appx__title em{font-style:normal;color:var(--leaf-deep)}
 .appx__lede{max-width:52ch;margin:14px auto 0;color:var(--ink-soft);font-size:clamp(1rem,1.3vw,1.12rem)}
-@media(max-width:640px){.nav__link[href="#/guide"]{display:none}}
 
 /* ---- ported dashboard model (scoped) ---- */
 
