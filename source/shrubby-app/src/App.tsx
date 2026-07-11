@@ -597,9 +597,16 @@ function Nav({ route }: { route: string }) {
   const goHomeSection = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault()
     if (route !== 'home') { window.location.hash = '#/' }
-    requestAnimationFrame(() => {
-      document.getElementById(id)?.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth' })
-    })
+    // Coming from a subpage the home sections don't exist until React
+    // re-renders the route — one frame is not enough. Retry until it mounts
+    // (setTimeout, not rAF: rAF freezes in throttled/background tabs).
+    const t0 = performance.now()
+    const attempt = () => {
+      const el = document.getElementById(id)
+      if (el) el.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth' })
+      else if (performance.now() - t0 < 2000) setTimeout(attempt, 40)
+    }
+    attempt()
   }
   return (
     <nav className={`nav${hidden ? ' nav--hidden' : ''}`} aria-label="Primary">

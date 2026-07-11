@@ -13,6 +13,7 @@ Updated: 2026-07-11
 | `shrubby-website-2026-07-11-pip-v2.html` | Site + Pip v2 bar-resident (3/4 clay sculpt, 14 bar acts, cursor-aware antennae) | `b45a5a86794ea4fd277abe1816c04f85` |
 | `shrubby-website-2026-07-11-pip-film.html` | Site + footer ladybug as keyed reference film on the bar (code model removed; NOTE: 4 embedded videos now) | `7275c2f2a36a1567c8490d70edfc249d` |
 | `shrubby-website-2026-07-11-no-ladybug.html` | Site with the footer ladybug fully removed (3 videos again; ladybug.tsx = null export) | `27623fb1a048c6d5aa71bee13f5db3b6` |
+| `shrubby-website-2026-07-11-nav-almanac-fix.html` | Site + nav Almanac/Practice scroll fix (subpage-to-section retry) | `72fb10df24a580c099e33291838cc29e` |
 | `patient-bloom.html` | "Patient Bloom" interactive generative meadow (p5.js inlined, runs offline) | `a54fbd6ea82bec63287d706e062b0158` |
 | `patient-bloom-philosophy.md` | The artwork's design manifesto | — |
 | `source/shrubby-app/` | Full editable React/TypeScript source of the site (28MB) | — |
