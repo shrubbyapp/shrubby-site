@@ -499,6 +499,10 @@ main,footer,.nav,.vine{position:relative;z-index:1}
 .field__bar a:hover{color:var(--lime-bright);text-decoration:underline;text-underline-offset:3px}
 .field__brand{display:flex;align-items:center;gap:10px;font-family:'Bricolage Grotesque';font-weight:800;font-size:1.1rem;color:var(--on-dark)}
 @media(max-width:640px){.field__bar{justify-content:center;text-align:center;border-radius:26px}.field__note{font-size:.82rem;flex-basis:100%}}
+/* library route: bar-only footer floating over the hero — no repeated meadow */
+.field--bare{position:fixed;left:0;right:0;bottom:0;min-height:auto;background:transparent;overflow:visible;z-index:40;pointer-events:none}
+.field--bare::before{display:none}
+.field--bare .field__bar{pointer-events:auto;margin-bottom:16px}
 .field__row a{color:var(--leaf-deep);font-weight:600}
 
 /* ================= Back to top ================= */
@@ -799,7 +803,7 @@ html{scrollbar-color:rgba(111,161,78,.65) rgba(51,81,44,.15);scrollbar-width:thi
 .lib__title em{font-style:normal;color:var(--leaf-deep)}
 .lib--hero .lib__title{font-size:clamp(2.8rem,7vw,5.6rem)}
 .lib__lede{max-width:48ch;margin:14px auto 0;color:var(--ink);font-size:clamp(1rem,1.3vw,1.12rem);text-shadow:0 1px 14px rgba(247,247,241,.8)}
-.lib__stage{flex:1;min-height:0;display:flex;justify-content:center;align-items:center;padding:2.5vh 0}
+.lib__stage{flex:1;min-height:0;display:flex;justify-content:center;align-items:center;padding:2.5vh 0 clamp(84px,11vh,120px)}
 .lib--hero .lib__stage{flex:0 1 4vh}
 .lib__searchrow{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:16px;padding-bottom:1vh}
 .lib--hero .lib__searchrow{flex:1 0 auto;justify-content:flex-start}

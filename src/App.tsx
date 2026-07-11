@@ -1709,12 +1709,16 @@ function CTA() {
   )
 }
 
-function FieldFooter() {
+/* On the library route the hero already plays the meadow — the footer drops
+ * its repeated video and floats as a bare glass bar over the hero instead. */
+function FieldFooter({ bare }: { bare?: boolean }) {
   return (
-    <footer className="field">
-      <div className="field__vidwrap" aria-hidden="true">
-        <CrossfadeLoop className="field__vid" src={FIELD_MP4} poster={FIELD_JPG} end={9.3} fade={0.5} />
-      </div>
+    <footer className={`field${bare ? ' field--bare' : ''}`}>
+      {!bare && (
+        <div className="field__vidwrap" aria-hidden="true">
+          <CrossfadeLoop className="field__vid" src={FIELD_MP4} poster={FIELD_JPG} end={9.3} fade={0.5} />
+        </div>
+      )}
       <div className="field__bar">
         <span className="field__brand">Shrubby</span>
         <span className="field__note">Trained on Canadian native flora — from coast to coast to coast.</span>
@@ -1889,7 +1893,7 @@ export default function App() {
       ) : (
         <Guide />
       )}
-      <FieldFooter />
+      <FieldFooter bare={route === 'library'} />
     </>
   )
 }
