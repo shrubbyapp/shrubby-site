@@ -35,6 +35,7 @@ const rows = [...byLatin.values()]
     note: clean(e.uses_symbolism),
     tag: native(e) ? 'Native' : 'Garden',
     badge: native(e) ? 'Canadian native' : 'Garden species',
+    ...(e.image_url ? { photo: clean(e.image_url) } : {}),
   }))
   .filter(r => r.name && r.latin && r.desc)
   .sort((a,b)=>a.name.localeCompare(b.name))
@@ -46,7 +47,7 @@ export type Species = {
   light: string; water: string; days: number
   toxShort: string; toxicity: string
   care: string; hardiness: string; note: string
-  tag: string; badge: string
+  tag: string; badge: string; photo?: string
 }
 export const SPECIES: Species[] = `
 fs.writeFileSync(out, header + JSON.stringify(rows) + '\n')

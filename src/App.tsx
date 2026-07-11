@@ -1186,7 +1186,7 @@ const LIBRARY: LibEntry[] = (() => {
       light: s.light, water: s.water,
       toxShort: s.toxShort, toxicity: s.toxicity,
       care: s.care, hardiness: s.hardiness, note: s.note,
-      tag: s.tag, badge: s.badge,
+      tag: s.tag, badge: s.badge, photo: s.photo,
     }))
   return [...FEATURED, ...rest]
 })()
@@ -1235,6 +1235,7 @@ function Library() {
   const [sugOpen, setSugOpen] = useState(false)
   const [thinking, setThinking] = useState(false)
   const [plant, setPlant] = useState<LibPlant | null>(null)
+  const [photoDead, setPhotoDead] = useState(false)
   const [saved, setSaved] = useState(false)
   const [exported, setExported] = useState(false)
   const [shared, setShared] = useState(false)
@@ -1261,7 +1262,7 @@ function Library() {
     if (!pick && !q.trim()) return
     const p = pick ?? searchLibrary(q)[0] ?? LIBRARY[0]
     clearTimeout(runTimer.current)
-    setQ(p.name); setSugOpen(false); setHi(-1); setThinking(true); setPlant(null)
+    setQ(p.name); setSugOpen(false); setHi(-1); setThinking(true); setPlant(null); setPhotoDead(false)
     setSaved(false); setExported(false); setShared(false)
     runTimer.current = window.setTimeout(() => { setThinking(false); setPlant(p) }, REDUCE ? 120 : 950)
   }
@@ -1302,14 +1303,14 @@ function Library() {
             <article className="lib__card" onPointerMove={pcardMove} onPointerLeave={pcardLeave}>
               <div className="pcard__glare" aria-hidden="true" />
               <figure
-                className={`lib__photo${plant.photo ? '' : ' lib__photo--fallback'}`}
-                style={plant.photo ? undefined : (() => {
+                className={`lib__photo${plant.photo && !photoDead ? '' : ' lib__photo--fallback'}`}
+                style={plant.photo && !photoDead ? undefined : (() => {
                   const [a, b] = fallbackTint(plant.name)
                   return { background: `linear-gradient(150deg, ${a}, ${b})` }
                 })()}
               >
-                {plant.photo
-                  ? <img src={plant.photo} alt={plant.name} />
+                {plant.photo && !photoDead
+                  ? <img src={plant.photo} alt={plant.name} onError={() => setPhotoDead(true)} />
                   : <Leaf className="lib__leaf" size={92} strokeWidth={1.3} aria-hidden="true" />}
                 <button className="lib__close" onClick={clear} aria-label="Clear result">
                   <X size={16} strokeWidth={2.4} />
