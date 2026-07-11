@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { flushSync } from 'react-dom'
 import {
   Camera, BookOpen, BellRing, Droplets, Sun, Plus,
   Sparkles, MessageCircle, MapPin, CalendarHeart, Leaf, ArrowRight, ArrowUpRight,
@@ -398,16 +399,6 @@ function Fireflies() {
   return <canvas ref={ref} className="night__canvas" aria-hidden="true" />
 }
 
-/* ---------------- shared: ask box ---------------- */
-
-const REPLIES = [
-  <><b>Observation.</b> Sounds like it wants brighter, indirect light — a spot a few feet from a south window is usually perfect. I'll watch how it responds.</>,
-  <><b>A gentle note.</b> Most droop is thirst-timing, not thirst. Let the top inch of soil dry, then water deeply — I'll nudge you when it's due.</>,
-  <><b>Good instinct.</b> Feed lightly through spring and stop by late summer so it hardens off before the cold. Want me to set the rhythm?</>,
-  <><b>Here's my read.</b> Yellowing from the bottom up is often kindness overdone. Ease off the watering can and new growth will firm up.</>,
-  <><b>Noted.</b> That's a hardy, forgiving plant — full sun, a deep drink once a week, and it'll reward you all season.</>,
-]
-
 /* ---------------- ask loop: question typed, answer in the blue bubble ---------------- */
 
 const DEMO_QA: Array<{ q: string; a: string }> = [
@@ -644,13 +635,15 @@ function Nav({ route }: { route: string }) {
 }
 
 function Hero() {
-  const [reply, setReply] = useState<number | null>(null)
-  const count = useRef(0)
+  const [reply, setReply] = useState<string | null>(null)
+  const fbCounter = useRef(0)
   const onAsk = (e: React.FormEvent) => {
     e.preventDefault()
-    setReply(count.current % REPLIES.length)
-    count.current += 1
     const inp = document.getElementById('ask') as HTMLInputElement | null
+    const text = (inp?.value ?? '').trim()
+    if (!text) return
+    /* same engine as the mascot box: BRAIN entries, then the 956-species library */
+    setReply(answerQuery(text, fbCounter))
     if (inp) inp.value = ''
   }
   useEffect(() => {
@@ -755,7 +748,7 @@ function Hero() {
               {reply !== null && (
                 <div className="hero__reply" role="status" aria-live="polite">
                   <MessageCircle size={15} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 7 }} />
-                  {REPLIES[reply]}
+                  {reply}
                 </div>
               )}
             </div>
@@ -783,8 +776,10 @@ function Companion() {
     return () => clearTimeout(t)
   }, [reply])
   const engage = () => {
-    setLive(true); setReply(null); setQv('')
-    requestAnimationFrame(() => liveInput.current?.focus())
+    /* flushSync keeps the focus() inside the tap gesture — iOS Safari only
+       opens the keyboard for focus caused directly by a user gesture */
+    flushSync(() => { setLive(true); setReply(null); setQv('') })
+    liveInput.current?.focus()
   }
   const disengage = () => { setLive(false); setReply(null); setQv('') }
   const submit = (raw?: string) => {
