@@ -4,11 +4,13 @@ import {
   Sparkles, MessageCircle, MapPin, CalendarHeart, Leaf, ArrowRight, ArrowUpRight,
   Moon, CloudRain, Mic, Send, ArrowUp,
   Search, X, ShieldCheck, Snowflake, Sprout, Heart, Download, Share2,
+  Home, CalendarDays, LogOut, Flame, Check,
 } from 'lucide-react'
 import { FIELD_JPG, SHRUB_MP4, FIELD_MP4, HERO2_MP4, HERO2_JPG } from './media'
 import { PHOTO_DAYLILY, PHOTO_FERN, PHOTO_SUSAN, PHOTO_COLUMBINE, PHOTO_CONEFLOWER, PHOTO_SERVICEBERRY } from './photos'
 import { CompanionSky } from './companion-sky'
 import { DASH_HTML } from './dashboard'
+import { MASCOT_PNG } from './brand'
 
 /* ---------------- helpers ---------------- */
 
@@ -1312,8 +1314,195 @@ function AppShowcase() {
             The same clay and glass, sized for a thumb — home, plant detail, scan
             and the season's schedule, exactly as they ship.
           </p>
+          <a className="btn-ink appx__demo" href="#/login">
+            Try the live demo <ArrowUpRight size={18} />
+          </a>
         </header>
         <div className="dash" dangerouslySetInnerHTML={{ __html: DASH_HTML }} />
+      </div>
+    </main>
+  )
+}
+
+/* ---------------- login + user dashboard (demo of the product) ----------------
+ * Ported from Brain/Shrubby Site/{Shrubby Login, Shrubby Dashboard}.html —
+ * hand-translated to React (display face: Bricolage per the unify decision).
+ * Demo flow only: sign-in routes to #/dashboard; the sidebar user row signs out. */
+
+function UserLogin() {
+  return (
+    <main className="ul">
+      <aside className="ul__brand">
+        <div className="ul__logo">
+          <span className="ul__mark">S</span>
+          <span className="ul__word">Shr<b>u</b>bby</span>
+        </div>
+        <div className="ul__heroish">
+          <img className="ul__mascot" src={MASCOT_PNG} alt="Shrubby, the leaf mascot, waving from its terracotta pot" />
+          <h2>Your plants missed you.</h2>
+          <p>Sign back in to check today's watering, chat with Shrubby and keep your care streak alive.</p>
+        </div>
+        <div className="ul__foot"><span className="ul__dot" />12 plants thriving under your care</div>
+      </aside>
+      <section className="ul__formwrap">
+        <form className="ul__card" onSubmit={e => { e.preventDefault(); window.location.hash = '#/dashboard' }}>
+          <div className="ul__eyebrow">Welcome back</div>
+          <h1>Sign in to Shrubby</h1>
+          <div className="ul__oauth">
+            <a className="ul__oa ul__oa--light" href="#/dashboard">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M3.5 12h17M12 3.5c-5 5.5-5 11.5 0 17M12 3.5c5 5.5 5 11.5 0 17" /></svg>
+              Continue with Google
+            </a>
+            <a className="ul__oa ul__oa--ink" href="#/dashboard">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 6c-1-2-3.5-2.6-5.5-1.4C4 6.1 3.2 9.6 4.6 13.4c1.3 3.5 3.6 6.1 5.4 6.1 1 0 1.2-.6 2-.6s1 .6 2 .6c1.9 0 4.1-2.6 5.4-6.1-2.2-1-3-3.4-2-5.4.6-1.2 1.6-1.9 1.6-1.9C17.5 4.3 14 4.5 12 6z" /><path d="M12 6c0-1.8 1.4-3.4 3.2-3.5C15.3 4.3 14 6 12 6z" /></svg>
+              Continue with Apple
+            </a>
+          </div>
+          <div className="ul__divider"><span /><em>or with email</em><span /></div>
+          <label className="ul__field">
+            <span>Email</span>
+            <input type="email" placeholder="you@example.com" autoComplete="off" />
+          </label>
+          <label className="ul__field">
+            <span>Password <a href="#/login" onClick={e => e.preventDefault()}>Forgot?</a></span>
+            <input type="password" placeholder="••••••••" autoComplete="off" />
+          </label>
+          <button type="submit" className="ul__submit">Sign in →</button>
+          <div className="ul__alt">New to Shrubby? <a href="#/login" onClick={e => e.preventDefault()}>Create an account</a></div>
+        </form>
+      </section>
+    </main>
+  )
+}
+
+const UD_PLANTS = [
+  { name: 'Monstera', room: 'Living room', badge: 'Thriving', tone: 'leaf' },
+  { name: 'Boston Fern', room: 'Kitchen', badge: 'Thirsty', tone: 'sky' },
+  { name: 'Calathea', room: 'Bedroom', badge: 'Needs mist', tone: 'terra' },
+  { name: 'Golden Pothos', room: 'Office', badge: 'Thriving', tone: 'leaf' },
+]
+
+const UD_TASKS = [
+  { title: 'Water the Boston Fern', sub: 'Kitchen shelf · 250 ml', ico: <Droplets size={16} strokeWidth={1.9} />, tone: 'sky' },
+  { title: 'Mist the Calathea', sub: 'Bedroom · humidity boost', ico: <CloudRain size={16} strokeWidth={1.9} />, tone: 'leaf' },
+  { title: 'Fertilize the Monstera', sub: 'Living room · monthly feed', ico: <Sprout size={16} strokeWidth={1.9} />, tone: 'terra' },
+]
+
+/** Soft leaf mark used where the model ships photo placeholders */
+function UdLeafSlot({ big }: { big?: boolean }) {
+  return (
+    <div className={`ud__slot${big ? ' ud__slot--big' : ''}`} aria-hidden="true">
+      <Leaf size={big ? 44 : 34} strokeWidth={1.6} />
+    </div>
+  )
+}
+
+function UserDashboard() {
+  const [done, setDone] = useState<Record<number, boolean>>({ 0: false, 1: false, 2: true })
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+  const week = [['MON', 7], ['TUE', 8], ['WED', 9], ['THU', 10], ['FRI', 11], ['SAT', 12], ['SUN', 13]] as const
+  return (
+    <main className="ud">
+      <aside className="ud__side">
+        <div className="ud__logo">
+          <span className="ul__mark">S</span>
+          <span className="ul__word">Shr<b>u</b>bby</span>
+        </div>
+        <div className="ud__nav ud__nav--on"><Home size={17} strokeWidth={1.9} /> Home</div>
+        <div className="ud__nav"><Leaf size={17} strokeWidth={1.9} /> My Plants</div>
+        <div className="ud__nav"><CalendarDays size={17} strokeWidth={1.9} /> Schedule</div>
+        <div className="ud__nav"><Camera size={17} strokeWidth={1.9} /> Scan</div>
+        <div className="ud__nav"><MessageCircle size={17} strokeWidth={1.9} /> Ask Shrubby</div>
+        <a className="ud__user" href="#/login" title="Sign out">
+          <span className="ud__avatar">G</span>
+          <span className="ud__usertxt"><b>Giba</b><small>Plant parent · 12 plants</small></span>
+          <LogOut size={15} strokeWidth={1.9} />
+        </a>
+      </aside>
+      <div className="ud__main">
+        <header className="ud__top">
+          <div className="ud__toptxt">
+            <div className="ul__eyebrow">Dashboard</div>
+            <h1>{greeting}, Giba</h1>
+          </div>
+          <div className="ud__search"><Search size={15} strokeWidth={2} /> Search plants, tasks…</div>
+          <button type="button" className="ud__add">+ Add plant</button>
+        </header>
+
+        <section className="ud__hero">
+          <div className="ud__star">
+            <div className="ud__starphoto"><UdLeafSlot big /></div>
+            <div className="ud__startxt">
+              <span className="ud__pill">● Thriving</span>
+              <h3>Monstera deliciosa</h3>
+              <div className="ud__where">Living room · near east window</div>
+              <div className="ud__stats">
+                <div><small>Moisture</small><b>62%</b></div>
+                <div><small>Light</small><b>Bright</b></div>
+                <div><small>Next water</small><b>2 days</b></div>
+              </div>
+            </div>
+          </div>
+          <div className="ud__kpi ud__kpi--water">
+            <div className="ud__kpihead"><Droplets size={15} strokeWidth={1.9} /> Watering due today</div>
+            <div><div className="ud__big">3</div><div className="ud__kpisub">Fern, Calathea &amp; Pothos are thirsty</div></div>
+          </div>
+          <div className="ud__kpi ud__kpi--streak">
+            <div className="ud__kpihead"><Flame size={15} strokeWidth={1.9} /> Care streak</div>
+            <div><div className="ud__big">18 days</div><div className="ud__kpisub">Best streak yet — keep it up</div></div>
+          </div>
+        </section>
+
+        <section className="ud__mid">
+          <div className="ud__week">
+            <div className="ud__cardhead"><b>This week's care</b><a href="#/dashboard" onClick={e => e.preventDefault()}>Full schedule →</a></div>
+            <div className="ud__days">
+              {week.map(([d, n]) => (
+                <div className="ud__day" key={d}><small>{d}</small><b className={n === 9 ? 'ud__day--today' : ''}>{n}</b></div>
+              ))}
+            </div>
+            <div className="ud__tasks">
+              {UD_TASKS.map((t, i) => (
+                <div className={`ud__task${done[i] ? ' ud__task--done' : ''}`} key={t.title}>
+                  <span className={`ud__tico ud__tico--${t.tone}`}>{t.ico}</span>
+                  <span className="ud__ttxt"><b>{t.title}</b><small>{t.sub}</small></span>
+                  <button
+                    type="button" className="ud__check" aria-pressed={!!done[i]}
+                    aria-label={`Mark "${t.title}" ${done[i] ? 'not done' : 'done'}`}
+                    onClick={() => setDone(s => ({ ...s, [i]: !s[i] }))}
+                  >
+                    {done[i] && <Check size={14} strokeWidth={3} />}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="ud__ask">
+            <small className="ud__askkick">Ask Shrubby</small>
+            <p>“Your Calathea's leaves are curling? That usually means it wants more humidity. Want a misting reminder?”</p>
+            <div className="ud__askrow">
+              <div className="ud__askpill">Ask about your plants…</div>
+              <button type="button" className="ud__asksend" aria-label="Send">↑</button>
+            </div>
+            <img className="ud__askmascot" src={MASCOT_PNG} alt="" aria-hidden="true" />
+          </div>
+        </section>
+
+        <section>
+          <div className="ud__cardhead ud__cardhead--bare"><b>My plants</b><a href="#/dashboard" onClick={e => e.preventDefault()}>See all 12 →</a></div>
+          <div className="ud__grid">
+            {UD_PLANTS.map(p => (
+              <div className="ud__plant" key={p.name}>
+                <div className="ud__pphoto"><UdLeafSlot /></div>
+                <div className="ud__prow">
+                  <span className="ud__ptxt"><b>{p.name}</b><small>{p.room}</small></span>
+                  <span className={`ud__badge ud__badge--${p.tone}`}>{p.badge}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   )
@@ -1539,6 +1728,8 @@ function useHashRoute() {
     if (window.location.hash.startsWith('#/guide')) return 'guide'
     if (window.location.hash.startsWith('#/library')) return 'library'
     if (window.location.hash.startsWith('#/app')) return 'app'
+    if (window.location.hash.startsWith('#/login')) return 'login'
+    if (window.location.hash.startsWith('#/dashboard')) return 'dashboard'
     return 'home'
   }, [])
   const [route, setRoute] = useState(get)
@@ -1574,6 +1765,10 @@ export default function App() {
         <Library />
       ) : route === 'app' ? (
         <AppShowcase />
+      ) : route === 'login' ? (
+        <UserLogin />
+      ) : route === 'dashboard' ? (
+        <UserDashboard />
       ) : (
         <Guide />
       )}
