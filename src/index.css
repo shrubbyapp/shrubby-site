@@ -555,15 +555,13 @@ main,footer,.nav,.vine{position:relative;z-index:1}
 }
 
 /* ================= Floating zigzag deck =================
- * Two rolls of small closed cards, column-staggered into a chevron zigzag,
- * floating in the sky. Cell = camera parallax (pointer pans --px/--py; each
- * card travels by its own depth --z), inner .deck__bob = idle float. Two
- * transforms on two elements, so they compose instead of fighting. */
+ * Two rolls of small closed cards, column-staggered into a chevron zigzag.
+ * Night deck: idle bob + pointer-camera parallax. Plant plates: static. */
 .deck{
   list-style:none;margin:0 auto;padding:14px 0;
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:clamp(28px,3.8vw,52px) clamp(22px,2.8vw,40px);
-  align-items:start;max-width:740px;
+  gap:clamp(26px,3.4vw,44px) clamp(18px,2.4vw,30px);
+  align-items:start;max-width:780px;
 }
 .deck__cell{
   --zz:0px; --z:.7;
@@ -573,8 +571,6 @@ main,footer,.nav,.vine{position:relative;z-index:1}
   transition:transform .9s cubic-bezier(.16,.84,.28,1);
   will-change:transform;
 }
-/* zigzag: outer columns lift, middle column drops — a clean chevron the
- * two rolls share, echoing the grass ribbon in the sky film */
 .deck__cell:nth-child(3n+1){--zz:-16px}
 .deck__cell:nth-child(3n+2){--zz:16px}
 .deck__cell:nth-child(3n+3){--zz:-16px}
@@ -587,62 +583,15 @@ main,footer,.nav,.vine{position:relative;z-index:1}
   0%,100%{transform:translateY(0)}
   50%{transform:translateY(-8px)}
 }
+/* static decks: zigzag only — no bob, no camera */
+.deck--still .deck__bob{animation:none}
+.deck--still .deck__cell{transition:none;transform:translateY(var(--zz));will-change:auto}
 
 /* ---- the sky: full-bleed gentle-wind film behind the plant deck ---- */
 .skyfield{
   position:relative;
   margin-inline:calc(50% - 50vw);
-  padding:0;
-}
-
-/* ---- path mode: cards ride the grass ribbon in 3D ----
- * The stage shares the film's 16:9 aspect, so the SKY_PATH fractions land
- * exactly on the ribbon. Each card: centered on its waypoint, scaled by
- * depth, banked into the path's heading; the pointer camera adds a little
- * extra yaw/pitch so the whole flight path turns with you. */
-.deck--path{
-  display:block;position:relative;
-  width:100%;max-width:none;margin:0;padding:0;
-  aspect-ratio:16/9;
-  perspective:1050px;
-}
-.deck--path .deck__cell{
-  position:absolute;left:var(--x);top:var(--y);
-  width:clamp(150px,16.5vw,206px);
-  transform:
-    translate(-50%,-50%)
-    translate3d(calc(var(--px,0) * var(--z) * -34px), calc(var(--py,0) * var(--z) * -22px), 0)
-    rotateY(calc(var(--ry,0deg) + var(--px,0) * 7deg))
-    rotateX(calc(var(--rx,0deg) - var(--py,0) * 5deg))
-    scale(var(--s,1));
-}
-.deck--path .plant{height:clamp(160px,16vw,204px)}
-/* backgroundless path cards: the cut-out plant floats free in the sky on
- * its own shadow — no frame, no box, no scrim. Name + latin sit beneath.
- * Wide screens only: the phone fallback grid keeps the framed photograph,
- * and the <picture> in the markup swaps sources on the same 561px line. */
-@media(min-width:561px){
-  .deck--path .plant__frost,
-  .deck--path .plant__season,
-  .deck--path .plant__meta{display:none}
-  .deck--path .plant{
-    background:none;border:0;border-radius:0;box-shadow:none;overflow:visible;
-  }
-  .deck--path .plant__photo{inset:0 0 42px 0}
-  .deck--path .plant__photo::after{display:none}
-  .deck--path .plant__photo img{
-    object-fit:contain;object-position:center bottom;
-    filter:drop-shadow(0 22px 22px rgba(8,34,52,.38));
-  }
-  .deck--path .plant:hover .plant__photo img{transform:scale(1.05)}
-  .deck--path .plant__body{padding:0;align-items:center;text-align:center}
-  .deck--path .plant__body h3{font-size:.98rem;text-shadow:0 2px 12px rgba(8,34,52,.5)}
-  .deck--path .plant__latin{font-size:.64rem;margin:0;color:rgba(255,255,255,.85);text-shadow:0 1px 8px rgba(8,34,52,.5)}
-  .deck--path .plant__add{
-    top:auto;bottom:34px;right:4px;width:30px;height:30px;
-    background:rgba(255,255,255,.3);border-color:rgba(255,255,255,.6);
-  }
-  .deck--path .plant__add svg{width:14px;height:14px}
+  padding:clamp(44px,7vh,84px) clamp(18px,4vw,56px);
 }
 .skyfield__vidwrap{
   position:absolute;inset:0;overflow:hidden;
@@ -652,20 +601,46 @@ main,footer,.nav,.vine{position:relative;z-index:1}
 .skyfield__vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .skyfield .deck{position:relative;z-index:1}
 
-/* ---- 2x smaller closed plant cards: photo, name, latin, care glance ---- */
-.deck--plants .plant{height:clamp(196px,22vw,224px);border-width:4px;border-radius:24px}
-.deck--plants .plant__body{padding:0 14px 12px}
-.deck--plants .plant__body h3{font-size:1.06rem}
-.deck--plants .plant__latin{font-size:.68rem;margin:1px 0 0}
-.deck--plants .plant__body p{display:none}
-.deck--plants .plant__meta{margin-top:6px;font-size:.64rem;gap:10px}
-.deck--plants .plant__meta .care svg{width:12px;height:12px}
-.deck--plants .plant__cta{display:none}
-.deck--plants .plant__add{width:30px;height:30px;top:9px;right:9px}
-.deck--plants .plant__add svg{width:14px;height:14px}
-.deck--plants .plant__season{top:9px;left:9px;font-size:.58rem;padding:4px 9px}
+/* ---- plant plates: photo + info on a clay-green card, pill CTA ---- */
+.plate{
+  display:flex;flex-direction:column;height:100%;
+  background:linear-gradient(165deg,#79A957,#55823A);
+  border-radius:26px;padding:8px 8px 13px;
+  box-shadow:0 24px 48px -22px rgba(14,32,21,.45), inset 0 1px 0 rgba(255,255,255,.28);
+}
+.plate__photo{position:relative;border-radius:19px;overflow:hidden;aspect-ratio:4/3}
+.plate__photo img{width:100%;height:100%;object-fit:cover;display:block}
+.plate__chip{
+  position:absolute;top:8px;left:8px;
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.94);color:#33512C;
+  font-size:.56rem;font-weight:700;letter-spacing:.01em;
+  padding:4px 9px;border-radius:100px;
+}
+.plate__chip::before{content:"";width:6px;height:6px;border-radius:50%;background:#C9E265;flex:0 0 auto}
+.plate__body{padding:10px 7px 0;display:flex;flex-direction:column;flex:1;min-height:0}
+.plate__body h3{
+  font-family:'Bricolage Grotesque';font-size:1.04rem;font-weight:700;
+  letter-spacing:-.01em;color:#fff;
+}
+.plate__latin{font-style:italic;font-size:.72rem;color:#E3EDD7;margin:1px 0 6px}
+.plate__body p{
+  font-size:.68rem;line-height:1.5;color:rgba(255,255,255,.9);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.plate__meta{display:flex;flex-wrap:wrap;gap:5px 12px;margin:8px 0 10px;font-size:.6rem;font-weight:600;color:#EAF3DC}
+.plate__meta span{display:inline-flex;align-items:center;gap:4px}
+.plate__meta svg{opacity:.9;flex:0 0 auto}
+.plate__cta{
+  margin-top:auto;height:37px;border-radius:100px;border:0;cursor:pointer;
+  background:linear-gradient(180deg,#F0F7C8,#D9EC8F);color:#33512C;
+  font-family:'Bricolage Grotesque';font-weight:700;font-size:.78rem;
+  box-shadow:0 10px 20px -10px rgba(7,30,7,.55), inset 0 1px 0 #fff;
+  transition:filter .2s;
+}
+.plate__cta:hover{filter:brightness(1.05)}
 
-/* ---- Night deck: same halved scale on the dark band ---- */
+/* ---- Night deck: halved glass cards on the dark band ---- */
 .deck--night .deck__cell,.deck--night .deck__bob,.deck--night .gcard{height:100%}
 .deck--night .gcard{
   min-height:118px;padding:15px 14px;border-radius:20px;
@@ -678,29 +653,24 @@ main,footer,.nav,.vine{position:relative;z-index:1}
 .deck--night .gcard h4{font-size:.94rem;margin-bottom:3px}
 .deck--night .gcard p{font-size:.76rem;line-height:1.5}
 
-/* Tablet: two rolls of two, chevron becomes an alternating step. */
+/* Tablet: two rolls of two. */
 @media(max-width:900px){
-  .deck{grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(24px,4.5vw,38px);max-width:480px}
+  .deck{grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(22px,4vw,34px);max-width:520px}
   .deck__cell:nth-child(2n+1){--zz:-12px}
   .deck__cell:nth-child(2n+2){--zz:14px}
-  .deck--plants .plant{height:clamp(188px,30vw,216px)}
 }
-/* Phone: the halved cards fit two-up — both decks keep their two rolls. */
+/* Phone: small cards fit two-up — both decks keep their two rolls. */
 @media(max-width:560px){
-  .deck{gap:18px 13px;max-width:360px}
-  .deck--plants .plant{height:clamp(170px,46vw,196px)}
-  .deck--plants .plant__body h3{font-size:.94rem}
+  .deck{gap:16px 12px;max-width:380px}
+  .plate{border-radius:22px;padding:6px 6px 11px}
+  .plate__photo{border-radius:16px}
+  .plate__body h3{font-size:.9rem}
+  .plate__body p{-webkit-line-clamp:2}
+  .plate__cta{height:33px;font-size:.7rem}
   .deck--night .gcard{min-height:0;padding:13px 12px}
   .deck--night .gcard p{font-size:.72rem}
-  /* the 16:9 stage is too short for six cards on a phone — fall back to
-   * the two-roll grid, the film staying as an ambient sky behind it */
-  .skyfield{padding:34px 16px 44px}
-  .deck--path{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));aspect-ratio:auto;perspective:none;max-width:360px;margin:0 auto;padding:0}
-  .deck--path .deck__cell{position:static;width:auto;transform:translateY(var(--zz))}
-  .deck--path .plant{height:clamp(170px,46vw,196px)}
+  .skyfield{padding:34px 14px 44px}
 }
-/* px/py stay 0 without a pointer, so the base transforms are already
- * static — only the idle bob needs switching off. */
 @media(prefers-reduced-motion:reduce){
   .deck__bob{animation:none}
 }

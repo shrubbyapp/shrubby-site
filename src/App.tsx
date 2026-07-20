@@ -8,7 +8,7 @@ import {
   Home, CalendarDays, LogOut, Flame, Check,
 } from 'lucide-react'
 import { FIELD_JPG, SHRUB_MP4, FIELD_MP4, HERO2_MP4, HERO2_JPG, CLOUDS_MP4, CLOUDS_JPG } from './media'
-import { PHOTO_DAYLILY, PHOTO_FERN, PHOTO_SUSAN, PHOTO_COLUMBINE, PHOTO_CONEFLOWER, PHOTO_SERVICEBERRY, CUT_DAYLILY, CUT_FERN, CUT_SUSAN, CUT_COLUMBINE, CUT_CONEFLOWER, CUT_SERVICEBERRY } from './photos'
+import { PHOTO_DAYLILY, PHOTO_FERN, PHOTO_SUSAN, PHOTO_COLUMBINE, PHOTO_CONEFLOWER, PHOTO_SERVICEBERRY } from './photos'
 import { CompanionSky } from './companion-sky'
 import { DASH_HTML } from './dashboard'
 import { MASCOT_PNG } from './brand'
@@ -82,35 +82,18 @@ function TopButton() {
 }
 
 /* ---------------- floating zigzag deck ----------------
- * Two rolls of small closed cards, column-staggered into a zigzag, floating
- * in the sky. Each card sits at its own depth (--z): moving the pointer pans
- * an invisible camera, so near cards travel further than far ones and the
- * deck reads as a volume you can look around in. The idle bob lives on an
- * inner wrapper so it composes with the parallax instead of fighting it.
- * All motion is transform-only and pauses under prefers-reduced-motion. */
+ * Two rolls of small closed cards, column-staggered into a zigzag. The
+ * night deck keeps its idle bob + pointer-camera parallax; `still` decks
+ * (the plant plates) are fully static per design. */
 
 const DECK_DEPTHS = [0.9, 0.45, 0.7, 0.55, 1, 0.6]
 
-/* Waypoints along the grass ribbon in the sky film (fractions of its 16:9
- * frame, far tail → near daisy head). The stage keeps the film's aspect, so
- * these track the ribbon precisely; z drives scale, yaw/pitch bank each card
- * into the path's direction of travel. */
-type SkyStop = { x: string; y: string; z: number; ry: number; rx: number }
-const SKY_PATH: SkyStop[] = [
-  { x: '62%', y: '22%', z: 0.38, ry: -16, rx: 10 }, // tail tip, deepest
-  { x: '30%', y: '34%', z: 0.52, ry: 14, rx: 8 },  // upper elbow
-  { x: '13%', y: '52%', z: 0.66, ry: 18, rx: 6 },  // left bend
-  { x: '37%', y: '68%', z: 0.8, ry: 8, rx: 4 },   // bottom sweep
-  { x: '60%', y: '74%', z: 0.92, ry: -6, rx: 3 },  // near band
-  { x: '84%', y: '58%', z: 1, ry: -15, rx: 2 },  // daisy head, closest
-]
-
-function FloatDeck({ items, className, ariaLabel, path }: {
-  items: React.ReactNode[]; className?: string; ariaLabel: string; path?: SkyStop[]
+function FloatDeck({ items, className, ariaLabel, still }: {
+  items: React.ReactNode[]; className?: string; ariaLabel: string; still?: boolean
 }) {
   const ref = useRef<HTMLUListElement>(null)
   const move = (e: React.PointerEvent) => {
-    if (REDUCE || e.pointerType !== 'mouse') return
+    if (still || REDUCE || e.pointerType !== 'mouse') return
     const el = ref.current
     if (!el) return
     const r = el.getBoundingClientRect()
@@ -125,25 +108,18 @@ function FloatDeck({ items, className, ariaLabel, path }: {
   }
   return (
     <ul
-      className={`deck ${path ? 'deck--path ' : ''}${className ?? ''}`} aria-label={ariaLabel} ref={ref}
+      className={`deck ${still ? 'deck--still ' : ''}${className ?? ''}`} aria-label={ariaLabel} ref={ref}
       onPointerMove={move} onPointerLeave={leave}
     >
-      {items.map((c, i) => {
-        const p = path?.[i % path.length]
-        const style: React.CSSProperties = p
-          ? {
-              '--i': i, '--z': p.z, '--x': p.x, '--y': p.y,
-              '--s': (0.5 + p.z * 0.5).toFixed(3),
-              '--ry': `${p.ry}deg`, '--rx': `${p.rx}deg`,
-              zIndex: Math.round(p.z * 20),
-            } as React.CSSProperties
-          : { '--i': i, '--z': DECK_DEPTHS[i % DECK_DEPTHS.length] } as React.CSSProperties
-        return (
-          <li className="deck__cell" style={style} key={i}>
-            <div className="deck__bob">{c}</div>
-          </li>
-        )
-      })}
+      {items.map((c, i) => (
+        <li
+          className="deck__cell"
+          style={{ '--i': i, '--z': DECK_DEPTHS[i % DECK_DEPTHS.length] } as React.CSSProperties}
+          key={i}
+        >
+          <div className="deck__bob">{c}</div>
+        </li>
+      ))}
     </ul>
   )
 }
@@ -985,7 +961,6 @@ const PLANTS = [
     season: 'High summer · Zones 3–9',
     blurb: <>The tireless golden rebloomer — <Kw>drought-easy</Kw>, deer-shrugging, forgiving. Shrubby's pick for a first perennial.</>,
     photo: PHOTO_DAYLILY,
-    cut: CUT_DAYLILY,
     water: 'Low water', light: 'Full sun',
     tag: 'Perennial', badge: 'Nearly unkillable',
     desc: 'The tireless golden rebloomer — flushes of bloom from June until frost on a plant that forgives nearly everything.',
@@ -1000,7 +975,6 @@ const PLANTS = [
     season: 'Spring emergence · Native',
     blurb: <>For Canadian <Kw>shade</Kw>: native fiddleheads and woodland texture — habitat that feeds pollinators and asks little back.</>,
     photo: PHOTO_FERN,
-    cut: CUT_FERN,
     water: 'Moist soil', light: 'Shade',
     tag: 'Native shade', badge: 'Canadian native',
     desc: 'Vase-shaped fronds to shoulder height — instant woodland for the dark side of the house.',
@@ -1015,7 +989,6 @@ const PLANTS = [
     season: 'Late season · Pollinator',
     blurb: <>A prairie native that carries the border into autumn and leaves <Kw>seed heads</Kw> for the finches. Plan the year, not just the bloom.</>,
     photo: PHOTO_SUSAN,
-    cut: CUT_SUSAN,
     water: 'Low water', light: 'Full sun',
     tag: 'Prairie native', badge: 'Pollinator favourite',
     desc: 'Gold daisies that carry the border from July into October, then feed the finches all winter.',
@@ -1030,7 +1003,6 @@ const PLANTS = [
     season: 'Late spring · Native',
     blurb: <>Nodding scarlet bells built for <Kw>hummingbirds</Kw>. Self-sows politely into the gaps you didn't know you had.</>,
     photo: PHOTO_COLUMBINE,
-    cut: CUT_COLUMBINE,
     water: 'Average', light: 'Part shade',
     tag: 'Native', badge: 'Hummingbird magnet',
     desc: 'Nodding scarlet-and-yellow bells in late spring, timed to the hummingbirds coming home.',
@@ -1045,7 +1017,6 @@ const PLANTS = [
     season: 'High summer · Pollinator',
     blurb: <>The prairie workhorse — <Kw>bees</Kw> all summer, goldfinches all winter. Happiest when you ignore it a little.</>,
     photo: PHOTO_CONEFLOWER,
-    cut: CUT_CONEFLOWER,
     water: 'Drought-ok', light: 'Full sun',
     tag: 'Prairie native', badge: 'Bee favourite',
     desc: 'The prairie workhorse — purple daisies all summer, standing seed heads all winter.',
@@ -1060,7 +1031,6 @@ const PLANTS = [
     season: 'Four seasons · Native shrub',
     blurb: <>Blossom, <Kw>berry</Kw>, blaze, bark — one small tree that performs in every season and feeds half the neighbourhood's birds.</>,
     photo: PHOTO_SERVICEBERRY,
-    cut: CUT_SERVICEBERRY,
     water: 'Average', light: 'Sun to part',
     tag: 'Native shrub', badge: 'Pet & kid safe',
     desc: 'Blossom, berry, blaze and bark — one small tree that performs in every season.',
@@ -1085,7 +1055,7 @@ function Almanac() {
           </div>
           <p className="rev" data-d="2">
             Six of Shrubby's favourites — native species, resilient perennials, and the low-fuss
-            classics that reward a beginner — floating along the path.
+            classics that reward a beginner — lined up along the path.
           </p>
         </div>
         <div className="rev" data-d="2">
@@ -1094,54 +1064,27 @@ function Almanac() {
               <CrossfadeLoop className="skyfield__vid" src={CLOUDS_MP4} poster={CLOUDS_JPG} end={9.4} fade={0.6} />
             </div>
             <FloatDeck
-            className="deck--plants"
-            ariaLabel="Featured plants from the almanac"
-            path={SKY_PATH}
-            items={PLANTS.map(p => (
-              <article
-                className="plant" key={p.name}
-                onPointerMove={e => {
-                  if (REDUCE) return
-                  const el = e.currentTarget as HTMLElement
-                  const r = el.getBoundingClientRect()
-                  const x = (e.clientX - r.left) / r.width - 0.5
-                  const yy = (e.clientY - r.top) / r.height - 0.5
-                  el.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-yy * 5}deg) translateY(-4px)`
-                  const img = el.querySelector('img') as HTMLElement
-                  if (img) img.style.transform = `scale(1.09) translate(${x * -10}px, ${yy * -8}px)`
-                }}
-                onPointerLeave={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.transform = ''
-                  const img = el.querySelector('img') as HTMLElement
-                  if (img) img.style.transform = ''
-                }}
-              >
-                <figure className="plant__photo">
-                  {/* cut-out rides the ribbon on wide screens; the phone
-                    * grid keeps the framed photograph */}
-                  <picture>
-                    <source media="(min-width: 561px)" srcSet={p.cut} />
+              className="deck--plates"
+              ariaLabel="Featured plants from the almanac"
+              still
+              items={PLANTS.map(p => (
+                <article className="plate" key={p.name}>
+                  <div className="plate__photo">
                     <img src={p.photo} alt={p.name} loading="lazy" />
-                  </picture>
-                </figure>
-                <div className="plant__frost" aria-hidden="true"><i /><i /><i /><i /></div>
-                <span className="plant__season chip">{p.season}</span>
-                <button className="plant__add" aria-label={`Save ${p.name}`}>
-                  <Plus size={22} strokeWidth={2.4} />
-                </button>
-                <div className="plant__body">
-                  <h3>{p.name}</h3>
-                  <div className="plant__latin">{p.latin}</div>
-                  <p>{p.blurb}</p>
-                  <div className="plant__meta" aria-label="Care profile">
-                    <span className="care"><Droplets size={16} /> {p.water}</span>
-                    <span className="care"><Sun size={16} /> {p.light}</span>
+                    <span className="plate__chip">{p.season}</span>
                   </div>
-                  <button className="plant__cta">Add to my garden</button>
-                </div>
-              </article>
-            ))}
+                  <div className="plate__body">
+                    <h3>{p.name}</h3>
+                    <div className="plate__latin">{p.latin}</div>
+                    <p>{p.desc}</p>
+                    <div className="plate__meta" aria-label="Care profile">
+                      <span><Droplets size={12} /> {p.water}</span>
+                      <span><Sun size={12} /> {p.light}</span>
+                    </div>
+                    <button className="plate__cta">Add to my garden</button>
+                  </div>
+                </article>
+              ))}
             />
           </div>
         </div>
