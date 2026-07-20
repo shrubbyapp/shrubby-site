@@ -7,7 +7,7 @@ import {
   Search, X, ShieldCheck, Snowflake, Sprout, Heart, Download, Share2,
   Home, CalendarDays, LogOut, Flame, Check,
 } from 'lucide-react'
-import { FIELD_JPG, SHRUB_MP4, FIELD_MP4, HERO2_MP4, HERO2_JPG, CLOUDS_MP4, CLOUDS_JPG } from './media'
+import { FIELD_JPG, SHRUB_MP4, FIELD_MP4, HERO2_MP4, HERO2_JPG } from './media'
 import { PHOTO_DAYLILY, PHOTO_FERN, PHOTO_SUSAN, PHOTO_COLUMBINE, PHOTO_CONEFLOWER, PHOTO_SERVICEBERRY } from './photos'
 import { CompanionSky } from './companion-sky'
 import { DASH_HTML } from './dashboard'
@@ -1055,35 +1055,31 @@ function Almanac() {
           </div>
           <p className="rev" data-d="2">
             Six of Shrubby's favourites — native species, resilient perennials, and the low-fuss
-            classics that reward a beginner — lined up along the path.
+            classics that reward a beginner. Pick one up — every card leans into your hand.
           </p>
         </div>
         <div className="rev" data-d="2">
-          <div className="skyfield">
-            <div className="skyfield__vidwrap" aria-hidden="true">
-              <CrossfadeLoop className="skyfield__vid" src={CLOUDS_MP4} poster={CLOUDS_JPG} end={9.4} fade={0.6} />
-            </div>
-            <FloatDeck
-              className="deck--plates"
-              ariaLabel="Featured plants from the almanac"
-              still
-              items={PLANTS.map(p => (
-                <article className="plate" key={p.name}>
-                  <div className="plate__photo">
-                    <img src={p.photo} alt={p.name} loading="lazy" />
-                    <span className="plate__chip">{p.season}</span>
+          <FloatDeck
+            className="deck--plates"
+            ariaLabel="Featured plants from the almanac"
+            still
+            items={PLANTS.map(p => (
+              <article className="plate" key={p.name} onPointerMove={pcardMove} onPointerLeave={pcardLeave}>
+                <div className="pcard__glare" aria-hidden="true" />
+                <div className="plate__photo">
+                  <img src={p.photo} alt={p.name} loading="lazy" />
+                  <span className="plate__chip">{p.season}</span>
+                </div>
+                <div className="plate__foot">
+                  <div className="plate__id">
+                    <h3>{p.name}</h3>
+                    <div className="plate__latin">{p.latin}</div>
                   </div>
-                  <div className="plate__foot">
-                    <div className="plate__id">
-                      <h3>{p.name}</h3>
-                      <div className="plate__latin">{p.latin}</div>
-                    </div>
-                    <button className="plate__cta"><Plus size={14} strokeWidth={2.6} /> Add</button>
-                  </div>
-                </article>
-              ))}
-            />
-          </div>
+                  <button className="plate__cta"><Plus size={14} strokeWidth={2.6} /> Add</button>
+                </div>
+              </article>
+            ))}
+          />
         </div>
       </div>
     </section>

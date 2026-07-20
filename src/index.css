@@ -587,30 +587,25 @@ main,footer,.nav,.vine{position:relative;z-index:1}
 .deck--still .deck__bob{animation:none}
 .deck--still .deck__cell{transition:none;transform:translateY(var(--zz));will-change:auto}
 
-/* ---- the sky: full-bleed gentle-wind film behind the plant deck ---- */
-.skyfield{
-  position:relative;
-  margin-inline:calc(50% - 50vw);
-  padding:clamp(44px,7vh,84px) clamp(18px,4vw,56px);
-}
-.skyfield__vidwrap{
-  position:absolute;inset:0;overflow:hidden;
-  -webkit-mask-image:linear-gradient(180deg,transparent,#000 10%,#000 90%,transparent);
-  mask-image:linear-gradient(180deg,transparent,#000 10%,#000 90%,transparent);
-}
-.skyfield__vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.skyfield .deck{position:relative;z-index:1}
-
-/* ---- plant plates: Maps-style place card — photo-dominant landscape
- * card at ~340px, one slim footer row (name + latin left, pill right) ---- */
+/* ---- plant plates: Maps-style place card in the site's clay-white
+ * material — photo-dominant ~350px card, slim name/latin + Add footer.
+ * Immersive: shares the practice cards' pointer tilt + travelling glare
+ * (pcardMove/pcardLeave + .pcard__glare), photo leans in on hover. ---- */
 .plate{
-  display:flex;flex-direction:column;height:100%;
-  background:linear-gradient(165deg,#79A957,#55823A);
+  position:relative;display:flex;flex-direction:column;height:100%;
+  background:#fff;
   border-radius:24px;padding:7px 7px 9px;
-  box-shadow:0 24px 48px -22px rgba(14,32,21,.45), inset 0 1px 0 rgba(255,255,255,.28);
+  box-shadow:0 30px 60px -26px rgba(14,32,21,.4), 0 2px 8px rgba(14,32,21,.08);
+  transition:transform .4s cubic-bezier(.2,.8,.2,1);
+  will-change:transform;
 }
+.plate .pcard__glare{position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:2}
 .plate__photo{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:16/10}
-.plate__photo img{width:100%;height:100%;object-fit:cover;display:block}
+.plate__photo img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transform:scale(1.02);transition:transform 2.6s ease;
+}
+.plate:hover .plate__photo img{transform:scale(1.09)}
 .plate__chip{
   position:absolute;top:8px;left:8px;
   display:inline-flex;align-items:center;gap:5px;
@@ -618,7 +613,7 @@ main,footer,.nav,.vine{position:relative;z-index:1}
   font-size:.56rem;font-weight:700;letter-spacing:.01em;
   padding:4px 9px;border-radius:100px;
 }
-.plate__chip::before{content:"";width:6px;height:6px;border-radius:50%;background:#C9E265;flex:0 0 auto}
+.plate__chip::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--leaf);flex:0 0 auto}
 .plate__foot{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:9px 6px 2px;min-width:0;
@@ -626,22 +621,22 @@ main,footer,.nav,.vine{position:relative;z-index:1}
 .plate__id{min-width:0}
 .plate__id h3{
   font-family:'Bricolage Grotesque';font-size:.96rem;font-weight:700;
-  letter-spacing:-.01em;color:#fff;
+  letter-spacing:-.01em;color:var(--ink);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .plate__latin{
-  font-style:italic;font-size:.68rem;color:#DCE9C8;margin-top:1px;
+  font-style:italic;font-size:.68rem;color:var(--ink-soft);margin-top:1px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .plate__cta{
   flex:0 0 auto;height:34px;padding:0 13px;border-radius:100px;border:0;cursor:pointer;
   display:inline-flex;align-items:center;gap:5px;
-  background:linear-gradient(180deg,#F0F7C8,#D9EC8F);color:#33512C;
+  background:linear-gradient(135deg,var(--leaf),var(--leaf-deep));color:#fff;
   font-family:'Bricolage Grotesque';font-weight:700;font-size:.74rem;
-  box-shadow:0 10px 20px -10px rgba(7,30,7,.55), inset 0 1px 0 #fff;
+  box-shadow:0 10px 20px -10px rgba(7,30,7,.5), inset 0 1px 0 rgba(255,255,255,.35);
   transition:filter .2s;
 }
-.plate__cta:hover{filter:brightness(1.05)}
+.plate__cta:hover{filter:brightness(1.06)}
 
 /* ---- Night deck: halved glass cards on the dark band ---- */
 .deck--night .deck__cell,.deck--night .deck__bob,.deck--night .gcard{height:100%}
@@ -671,7 +666,6 @@ main,footer,.nav,.vine{position:relative;z-index:1}
   .deck--night{max-width:380px}
   .deck--night .gcard{min-height:0;padding:13px 12px}
   .deck--night .gcard p{font-size:.72rem}
-  .skyfield{padding:34px 14px 44px}
 }
 @media(prefers-reduced-motion:reduce){
   .deck__bob{animation:none}
