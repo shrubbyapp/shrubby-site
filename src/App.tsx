@@ -1073,15 +1073,12 @@ function Almanac() {
                     <img src={p.photo} alt={p.name} loading="lazy" />
                     <span className="plate__chip">{p.season}</span>
                   </div>
-                  <div className="plate__body">
-                    <h3>{p.name}</h3>
-                    <div className="plate__latin">{p.latin}</div>
-                    <p>{p.desc}</p>
-                    <div className="plate__meta" aria-label="Care profile">
-                      <span><Droplets size={12} /> {p.water}</span>
-                      <span><Sun size={12} /> {p.light}</span>
+                  <div className="plate__foot">
+                    <div className="plate__id">
+                      <h3>{p.name}</h3>
+                      <div className="plate__latin">{p.latin}</div>
                     </div>
-                    <button className="plate__cta">Add to my garden</button>
+                    <button className="plate__cta"><Plus size={14} strokeWidth={2.6} /> Add</button>
                   </div>
                 </article>
               ))}
